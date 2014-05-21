@@ -13,7 +13,7 @@ class StadtgedaechtnisAdmin(admin.AdminSite):
     def get_urls(self):
         urls = super(StadtgedaechtnisAdmin, self).get_urls()
         my_urls = patterns('',
-                           url(r'^import/', include('stadtgedaechtnis.import_entries.urls'))
+                           url(r'^import/', include('stadtgedaechtnis_backend.import_entries.urls'))
                            )
         return my_urls + urls
 
