@@ -2,8 +2,8 @@ __author__ = 'jpi'
 
 from django.conf.urls import patterns, url
 
-from stadtgedaechtnis.services.views import *
-from stadtgedaechtnis.import_entries.views import ImportEntry
+from stadtgedaechtnis_backend.services.views import *
+from stadtgedaechtnis_backend.import_entries.views import ImportEntry
 
 
 urlpatterns = patterns('',

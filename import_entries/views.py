@@ -11,8 +11,8 @@ from django.conf import settings
 from datetime import datetime
 from django.views.generic import View
 
-from stadtgedaechtnis.utils import replace_multiple, get_nearby_locations
-from stadtgedaechtnis.models import Location, Entry, EntryType, MediaObject, MediaSource
+from stadtgedaechtnis_backend.utils import replace_multiple, get_nearby_locations
+from stadtgedaechtnis_backend.models import Location, Entry, EntryType, MediaObject, MediaSource
 
 
 __author__ = 'jpi'

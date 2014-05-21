@@ -1,7 +1,7 @@
 __author__ = 'jpi'
 
 import re
-from stadtgedaechtnis.models import Location
+from stadtgedaechtnis_backend.models import Location
 
 
 def replace_multiple(text, dictionary):

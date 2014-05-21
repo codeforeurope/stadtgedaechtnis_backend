@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.conf.urls import patterns, url, include
 
-from stadtgedaechtnis.models import *
+from stadtgedaechtnis_backend.models import *
 
 
 class StadtgedaechtnisAdmin(admin.AdminSite):

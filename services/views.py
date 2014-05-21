@@ -3,7 +3,7 @@ __author__ = 'jpi'
 from django.views.generic import View
 from django.http import HttpResponse
 from SPARQLWrapper import SPARQLWrapper, JSON
-from stadtgedaechtnis.models import Entry, Location
+from stadtgedaechtnis_backend.models import Entry, Location
 from decimal import Decimal
 
 import jsonpickle

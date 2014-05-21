@@ -2,9 +2,9 @@ __author__ = 'jpi'
 
 from django.conf.urls import patterns, url
 
-from stadtgedaechtnis.import_entries.views import *
+from stadtgedaechtnis_backend.import_entries.views import *
 
-from stadtgedaechtnis import admin
+from stadtgedaechtnis_backend import admin
 
 urlpatterns = patterns('',
     url(r'^simple-json/$', admin.site.admin_view(SimpleJSONImport.as_view(

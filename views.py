@@ -1,7 +1,7 @@
 __author__ = 'jpi'
 
 from django.views.generic.detail import DetailView
-from stadtgedaechtnis.models import Entry
+from stadtgedaechtnis_backend.models import Entry
 
 
 class EntryView(DetailView):
