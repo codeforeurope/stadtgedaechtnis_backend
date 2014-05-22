@@ -67,6 +67,7 @@ class GetLocationJSONView(View):
         result['locations'] = list()
         for location in locations:
             result_location = dict()
+            result_location['id'] = location.id
             result_location['title'] = location.label
             result_location['latitude'] = str(location.latitude)
             result_location['longitude'] = str(location.longitude)
@@ -110,6 +111,7 @@ class GetLocationsWithStoryTitle(GetLocationJSONView):
         result_location['stories'] = list()
         for story in location.entry_set.all():
             result_story = dict()
+            result_story["id"] = story.id
             result_story["title"] = story.title
             self.add_additional_story_info(result_story, story)
             result_location['stories'].append(result_story)
