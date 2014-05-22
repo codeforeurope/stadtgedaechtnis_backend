@@ -40,6 +40,4 @@ urlpatterns = patterns('',
         name="get-location-with-stories"),
     url(r'^locations/stories/$', GetAllStories.as_view(), name="get-all-stories"),
     url(r'^locations/stories/title$', GetAllStories.as_view(), name="get-all-stories"),
-    url(r'^import-entry/(?P<id>\d+)/(?P<location>\d+)/$', ImportEntry.as_view(),
-        name="import-entry")
     )

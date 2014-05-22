@@ -4,11 +4,11 @@
 
 {% block content %}
 
-	<script type="text/javascript" src="{%static "stadtgedaechtnis/js/jquery-1.11.0.js" %}"></script>
+	<script type="text/javascript" src="{%static "stadtgedaechtnis_backend/js/jquery-1.11.0.js" %}"></script>
 	<script type="text/javascript">
 	function importEntry(index) {
 		var selectedLocation = $("form#form-" + index + " select").val();
-		$.get("/services/import-entry/" + index + "/" + selectedLocation + "/", function() {
+		$.get("/admin/import/import-entry/" + index + "/" + selectedLocation + "/", function() {
 			$("img#check-" + index).show();
 		})
 		return false;
@@ -60,7 +60,7 @@
 							<option value="{{ location.id }}">{{ location.label }}</option>
 						{% endfor %}
 					</select>
-				<a href="#" onclick="importEntry({{ entry.nr }})">{% trans 'Mit diesem Ort importieren' %}</a>&nbsp;<img src="{% static 'stadtgedaechtnis/img/check.png' %}" id="check-{{ entry.nr }}" style="display: none">
+				<a href="#" onclick="importEntry({{ entry.nr }}); return false;">{% trans 'Mit diesem Ort importieren' %}</a>&nbsp;<img src="{% static 'stadtgedaechtnis_backend/img/check.png' %}" id="check-{{ entry.nr }}" style="display: none">
 				</form>
 			</td>
 		</tr>
