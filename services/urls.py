@@ -8,13 +8,28 @@ from stadtgedaechtnis_backend.import_entries.views import ImportEntry
 
 urlpatterns = patterns('',
     # TODO: add a mixin for localhost access only
-    url(r'^get-nearby-places/(?P<lat>\d{1,3}\.\d{1,10})/(?P<lon>\d{1,3}\.\d{1,10})/$', GetNearbyPlacesDBPedia.as_view(),
+    url(r'^places/(?P<lat>\d{1,3}\.\d{1,10})/(?P<lon>\d{1,3}\.\d{1,10})/$', GetNearbyPlacesDBPedia.as_view(),
         name="get-nearby-places"),
-    url(r'^get-nearby-locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<lon>\d{1,3}\.\d{1,10})/$', GetNearbyLocations.as_view(),
-        name="get-nearby-locations"),
-    url(r'^get-nearby-locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<maxlat>\d{1,3}\.\d{1,10})/'
-        '(?P<lon>\d{1,3}\.\d{1,10})/(?P<maxlon>\d{1,3}\.\d{1,10})/$', GetNearbyLocations.as_view(),
-        name="get-nearby-locations"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<lon>\d{1,3}\.\d{1,10})/$', GetLocationJSONView.as_view(),
+        name="get-locations"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<maxlat>\d{1,3}\.\d{1,10})/'
+        '(?P<lon>\d{1,3}\.\d{1,10})/(?P<maxlon>\d{1,3}\.\d{1,10})/$', GetLocationJSONView.as_view(),
+        name="get-locations"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<lon>\d{1,3}\.\d{1,10})/stories/story_count/$',
+        GetLocationsWithStoryCount.as_view(), name="get-locations-with-count"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<maxlat>\d{1,3}\.\d{1,10})/'
+        '(?P<lon>\d{1,3}\.\d{1,10})/(?P<maxlon>\d{1,3}\.\d{1,10})/stories/story_count/$',
+        GetLocationsWithStoryCount.as_view(), name="get-locations-with-count"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<lon>\d{1,3}\.\d{1,10})/stories/title/$',
+        GetLocationsWithStoryTitle.as_view(), name="get-locations-with-story-title"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<maxlat>\d{1,3}\.\d{1,10})/'
+        '(?P<lon>\d{1,3}\.\d{1,10})/(?P<maxlon>\d{1,3}\.\d{1,10})/stories/title/$', GetLocationsWithStoryTitle.as_view(),
+        name="get-locations-with-story-title"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<lon>\d{1,3}\.\d{1,10})/stories/$',
+        GetLocationsWithStories.as_view(), name="get-locations-with-stories"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<maxlat>\d{1,3}\.\d{1,10})/'
+        '(?P<lon>\d{1,3}\.\d{1,10})/(?P<maxlon>\d{1,3}\.\d{1,10})/stories/$', GetLocationsWithStories.as_view(),
+        name="get-locations-with-stories"),
     url(r'^import-entry/(?P<id>\d+)/(?P<location>\d+)/$', ImportEntry.as_view(),
         name="import-entry")
     )

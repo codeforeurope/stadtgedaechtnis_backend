@@ -2,6 +2,7 @@ __author__ = 'jpi'
 
 import re
 from stadtgedaechtnis_backend.models import Location
+from decimal import Decimal
 
 
 def replace_multiple(text, dictionary):
@@ -17,23 +18,30 @@ def replace_multiple(text, dictionary):
     return text
 
 
-def get_nearby_locations(lat, lon, max_lat=0, max_lon=0):
+def get_nearby_locations(lat, lon, max_lat=0, max_lon=0, stories_only=False):
     """
     Gets near Locations to given geolocations
     """
     if max_lat == 0:
-        min_lat, max_lat = lat - 0.01, lat + 0.01
+        min_lat, max_lat = Decimal(lat) - Decimal(0.01), Decimal(lat) + Decimal(0.01)
     else:
-        min_lat = lat
+        min_lat = Decimal(lat)
 
     if max_lon == 0:
-        min_lon, max_lon = lon - 0.01, lon + 0.01
+        min_lon, max_lon = Decimal(lon) - Decimal(0.01), Decimal(lon) + Decimal(0.01)
     else:
-        min_lon = lon
+        min_lon = Decimal(lon)
 
-    locations = Location.objects.filter(latitude__gte=min_lat,
-                                        latitude__lte=max_lat,
-                                        longitude__gte=min_lon,
-                                        longitude__lte=max_lon,)
+    if stories_only:
+        locations = Location.objects.filter(latitude__gte=min_lat,
+                                            latitude__lte=max_lat,
+                                            longitude__gte=min_lon,
+                                            longitude__lte=max_lon,
+                                            entry__isnull=False).distinct()
+    else:
+        locations = Location.objects.filter(latitude__gte=min_lat,
+                                            latitude__lte=max_lat,
+                                            longitude__gte=min_lon,
+                                            longitude__lte=max_lon)
 
     return locations

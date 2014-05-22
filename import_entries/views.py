@@ -201,7 +201,7 @@ class SimpleJSONImport(ImportView):
             except Location.DoesNotExist:
                 location["lat"] = str(lat)
                 location["lon"] = str(lon)
-                location["url"] = reverse('admin:stadtgedaechtnis_location_add') + \
+                location["url"] = reverse('admin:stadtgedaechtnis_backend_location_add') + \
                     "?latitude=" + str(lat) + "&longitude=" + str(lon)
                 location["near_locations"] = list()
                 location["nr"] = story["nr"]

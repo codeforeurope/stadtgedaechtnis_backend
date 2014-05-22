@@ -53,7 +53,7 @@ function search_locations() {
             title: gettext("Aktueller Ort")
         });
 
-    $.get("/services/get-nearby-places/" + lat + "/" + lon + "/").done(replace_locations);
+    $.get("/services/places/" + lat + "/" + lon + "/").done(replace_locations);
     getNearbyAddresses(lat, lon, function(result) {
         for (var i = 0; i < result.length; i++) {
             var addressMarker = new google.maps.Marker({
