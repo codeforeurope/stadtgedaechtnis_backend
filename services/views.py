@@ -3,14 +3,12 @@ __author__ = 'jpi'
 from django.views.generic import View
 from django.http import HttpResponse
 from SPARQLWrapper import SPARQLWrapper, JSON
-from stadtgedaechtnis_backend.models import Entry, Location
-from decimal import Decimal
 from stadtgedaechtnis_backend.utils import get_nearby_locations
 
 import jsonpickle
 import json
 
-RETURN_TYPE_JSON = "application_json"
+RETURN_TYPE_JSON = "application/json"
 
 
 class GetNearbyPlacesDBPedia(View):
