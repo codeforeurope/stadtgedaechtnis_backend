@@ -3,12 +3,12 @@ import urllib2
 import json
 import time
 import os
+from datetime import datetime
 
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse
 from django.core.urlresolvers import reverse
 from django.views.generic import TemplateView
 from django.conf import settings
-from datetime import datetime
 from django.views.generic import View
 
 from stadtgedaechtnis_backend.utils import replace_multiple, get_nearby_locations
@@ -114,6 +114,76 @@ class SimpleJSONImport(ImportView):
         context['exist_import'] = self.exist_entries
         return context
 
+    def add_story(self, label, story, location_object=None):
+        # only insert story if story does not exist so far
+        if not Entry.objects.filter(title=label).exists():
+            entry = Entry()
+            entry.title = label
+            entry.location = location_object
+            entry.author = story["author"]
+            entry.abstract = story["preview"]
+
+            if "timeStart" in story:
+                try:
+                    entry.time_start = time.strftime("%Y-%m-%d", time.strptime(story["timeStart"], "%Y-%m-%d"))
+                except ValueError:
+                    entry.time_start = time.strftime("%Y-%m-%d",
+                                                     time.strptime(story["created"], "%d.%m.%Y %H:%M:%S"))
+            else:
+                entry.time_start = time.strftime("%Y-%m-%d",
+                                                 time.strptime(story["created"], "%d.%m.%Y %H:%M:%S"))
+
+            if "timeEnd" in story:
+                entry.time_end = story["timeEnd"]
+
+            entry.type = EntryType.objects.get(label=story["typename"])
+            # TODO: add more infos
+            entry.save()
+
+            if "pic" in story and story["pic"] != "":
+                picture_url = "http://www.stadtgeschichte-coburg.de/" + story["pic"]
+                # populate the MediaObject
+                media_object = MediaObject()
+                media_object.type = MediaObject.IMAGE
+                media_object.created = datetime.now()
+                media_object.modified = datetime.now()
+                media_object.alt = story["pic_text"] if "pic_text" in story else ""
+                media_object.entry = entry
+                media_object.save()
+
+                # populate the MediaSource
+                media_source = MediaSource()
+                media_source.created = datetime.now()
+                media_source.modified = datetime.now()
+
+                media_source.media_object = media_object
+
+                # get a correct upload path for the image
+                filename = media_source.get_upload_path("upload.jpg")
+                download_file = urllib2.urlopen(picture_url)
+
+                # create intermittent directories if not present
+                if not os.path.exists(os.path.dirname(settings.MEDIA_ROOT + filename)):
+                    os.makedirs(os.path.dirname(settings.MEDIA_ROOT + filename))
+                # open local file
+                media_file = open(settings.MEDIA_ROOT + filename, "wb")
+                # download and save file at once (memory!)
+                media_file.write(download_file.read())
+                media_file.close()
+                media_source.file.name = filename
+                media_source.save()
+
+            else:
+                entry.save()
+            # Add entry to succeeded entry list
+            self.success_entries.append(entry)
+
+        else:
+            entry = dict()
+            entry["title"] = label
+            entry["location"] = location_object
+            self.exist_entries.append(entry)
+
     def do_import(self):
         self.success_entries = []
         self.failed_entries = []
@@ -134,69 +204,7 @@ class SimpleJSONImport(ImportView):
             try:
                 location_object = Location.objects.get(latitude=lat, longitude=lon)
 
-                # only insert story if story does not exist so far
-                if not Entry.objects.filter(title=label).exists():
-                    entry = Entry()
-                    entry.title = label
-                    entry.location = location_object
-                    entry.author = story["author"]
-                    entry.abstract = story["preview"]
-
-                    if "timeStart" in story:
-                        entry.time_start = story["timeStart"]
-                    else:
-                        entry.time_start = time.strftime(
-                            "%Y-%m-%d",
-                            time.strptime(story["created"], "%d.%m.%Y %H:%M:%S"))
-
-                    if "timeEnd" in story:
-                        entry.time_end = story["timeEnd"]
-                    entry.type = EntryType.objects.get(label=story["typename"])
-                    # TODO: add more infos
-
-                    if "pic" in story and story["pic"] != "":
-                        picture_url = "http://www.stadtgeschichte-coburg.de/" + story["pic"]
-                        # populate the MediaObject
-                        media_object = MediaObject()
-                        media_object.type = MediaObject.IMAGE
-                        media_object.created = datetime.now()
-                        media_object.modified = datetime.now()
-                        media_object.alt = story["pic_text"] if "pic_text" in story else ""
-                        media_object.entry = entry
-
-                        # populate the MediaSource
-                        media_source = MediaSource()
-                        media_source.created = datetime.now()
-                        media_source.modified = datetime.now()
-                        media_source.media_object = media_object
-
-                        # get a correct upload path for the image
-                        filename = media_source.get_upload_path("upload.jpg")
-                        download_file = urllib2.urlopen(picture_url)
-
-                        # create intermittent directories if not present
-                        if not os.path.exists(os.path.dirname(settings.MEDIA_ROOT + filename)):
-                            os.makedirs(os.path.dirname(settings.MEDIA_ROOT + filename))
-                        # open local file
-                        media_file = open(settings.MEDIA_ROOT + filename, "wb")
-                        # download and save file at once (memory!)
-                        media_file.write(download_file.read())
-                        media_file.close()
-                        media_source.file.name = filename
-                        entry.save()
-                        media_object.save()
-                        media_source.save()
-
-                    else:
-                        entry.save()
-                    # Add entry to succeeded entry list
-                    self.success_entries.append(entry)
-
-                else:
-                    entry = dict()
-                    entry["title"] = label
-                    entry["location"] = location_object
-                    self.exist_entries.append(entry)
+                self.add_story(label, story, location_object)
 
             except Location.DoesNotExist:
                 location["lat"] = str(lat)
@@ -212,6 +220,13 @@ class SimpleJSONImport(ImportView):
                     location["near_locations"].append(near_location)
 
                 self.failed_entries.append(location)
+
+            # remove located story from story_items
+            story_items.remove(story)
+
+        # iterate over all the remaining stories without location
+        for story in story_items:
+            self.add_story(story["label"], story)
 
 
 class ImportEntry(View):
