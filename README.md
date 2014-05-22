@@ -32,4 +32,5 @@ https://github.com/jessepeng/coburg-city-memory
 API Documentation
 -----------------
 
-Will follow later.
+Look at docs/api_documentation.pdf
+
