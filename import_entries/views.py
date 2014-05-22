@@ -198,7 +198,7 @@ class SimpleJSONImport(ImportView):
         # iterate over all the located stories
         for location in location_items:
             lat, lon = location["addressLatLng"].split(",")
-            lat, lon = round(Decimal(lat), 10), round(Decimal(lon), 10)
+            lat, lon = Decimal(lat), Decinmal(lon)
             label = location["id"]
 
             # find the story
