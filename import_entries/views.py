@@ -4,6 +4,7 @@ import json
 import time
 import os
 from datetime import datetime
+from decimal import Decimal
 
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse, HttpResponseServerError
 from django.core.urlresolvers import reverse
@@ -197,7 +198,7 @@ class SimpleJSONImport(ImportView):
         # iterate over all the located stories
         for location in location_items:
             lat, lon = location["addressLatLng"].split(",")
-            lat, lon = round(float(lat), 10), round(float(lon), 10)
+            lat, lon = round(Decimal(lat), 10), round(Decimal(lon), 10)
             label = location["id"]
 
             # find the story
