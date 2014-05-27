@@ -193,6 +193,7 @@ class GetAllStoriesJSONView(View):
         result["stories"] = list()
         for story in stories:
             result_story = dict()
+            result_story["id"] = story.id
             result_story["title"] = story.title
             if story.location is not None:
                 result_story["location"] = story.location.id
