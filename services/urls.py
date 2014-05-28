@@ -38,6 +38,6 @@ urlpatterns = patterns('',
         name="get-location-with-story-title"),
     url(r'^locations/(?P<id>\d+)/stories/$', GetLocationWithStories.as_view(),
         name="get-location-with-stories"),
-    url(r'^locations/stories/$', GetAllStoriesJSONView.as_view(), name="get-all-stories"),
-    url(r'^locations/stories/title$', GetAllStories.as_view(), name="get-all-stories"),
+    url(r'^stories/title/$', GetAllStoriesJSONView.as_view(), name="get-all-stories"),
+    url(r'^stories/', GetAllStories.as_view(), name="get-all-stories"),
     )
