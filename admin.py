@@ -22,8 +22,8 @@ admin.autodiscover()
 
 site = admin.site
 
-site.register(Entry)
+site.register(Story)
 site.register(Location)
-site.register(EntryType)
-site.register(MediaObject)
+site.register(Asset)
 site.register(MediaSource)
+site.register(Category)

@@ -4,7 +4,12 @@ from django.views.generic import View
 from django.http import HttpResponse
 from SPARQLWrapper import SPARQLWrapper, JSON
 from stadtgedaechtnis_backend.utils import get_nearby_locations
-from stadtgedaechtnis_backend.models import Entry, Location
+from stadtgedaechtnis_backend.models import Story, Location
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from stadtgedaechtnis_backend.serializers import *
 
 import jsonpickle
 import json
@@ -51,178 +56,149 @@ class GetNearbyPlacesDBPedia(View):
                             content_type="application/json")
 
 
-class GetLocationJSONView(View):
+class GetSingleSerializer():
+    """
+    Mix-in to provide a single serializer.
+    """
+    def __init__(self):
+        pass
+
+    def get_single_or_many_serializer(self):
+        return False
+
+
+class LocationSerializerView(APIView):
+    """
+    List one or more locations and use a specified serializer
+    """
+    def get_single_or_many_serializer(self):
+        return True
+
+    def get_locations(self):
+        return Location.objects.all()
+
+    def get_serializer(self):
+        return LocationSerializer(self.get_locations(), many=self.get_single_or_many_serializer())
+
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer()
+        return Response(serializer.data)
+
+
+class SingleLocation(GetSingleSerializer, LocationSerializerView):
+    """
+    Gets a single Location.
+    """
+    def get_locations(self):
+        try:
+            return Location.objects.get(pk=self.kwargs["id"])
+        except Location.DoesNotExist:
+            raise Http404
+
+
+class LocationList(LocationSerializerView):
+    """
+    List all locations or create a new one
+    """
+    def post(self, request, format=None):
+        pass
+
+
+class LocationListWithStoryIDs(LocationSerializerView):
+    """
+    Gets all the location and the story IDs
+    """
+    def get_serializer(self):
+        return LocationSerializerWithStoryIDs(self.get_locations(), many=self.get_single_or_many_serializer())
+
+
+class LocationListNearby(LocationSerializerView):
     """
     Retrieves a list of locations to given lat and lon coordinates.
-    Passes this list to an abstract method to retrieve further details and
-    then returns the result in JSON format.
+    """
+    def get_locations(self):
+        return get_nearby_locations(self.kwargs["lat"], self.kwargs["lon"],
+                                    self.kwargs["maxlat"] if "maxlat" in self.kwargs else 0,
+                                    self.kwargs["maxlon"] if "maxlon" in self.kwargs else 0)
+
+
+class LocationListNearbyWithStoryIDs(LocationListNearby, LocationListWithStoryIDs):
+    """
+    Retrieves a list of locations to given lat and lon coordinates. Also includes a list of attached story IDs.
     """
 
-    def create_result_list(self, locations):
-        """
-        Method that creates the result list
-        """
-        result = dict()
-        result['locations'] = list()
-        for location in locations:
-            result_location = dict()
-            result_location['id'] = location.id
-            result_location['title'] = location.label
-            result_location['latitude'] = str(location.latitude)
-            result_location['longitude'] = str(location.longitude)
-            self.add_additional_location_info(result_location, location)
-            result['locations'].append(result_location)
-        return result
 
-    def add_additional_location_info(self, result_location, location):
-        """
-        Adds aditional info for each location to the result dictionary
-        """
-        pass
+class LocationListWithStoryTitle(LocationSerializerView):
+    """
+    Retrieves a list of locations. Also includes a list of attached story IDs.
+    """
+    def get_serializer(self):
+        return LocationSerializerWithStoryTitle(self.get_locations(), many=self.get_single_or_many_serializer())
+
+
+class LocationListNearbyWithStoryTitle(LocationListWithStoryTitle, LocationListNearby):
+    """
+    Retrieves a list of locations to given lat and lon coordinates. Also includes a list of attached story titles.
+    """
+
+
+class LocationListWithStories(LocationSerializerView):
+    """
+    Retrieves a list of locations. Also includes all the story information attached to these locations.
+    """
+    def get_serializer(self):
+        return LocationSerializerWithStories(self.get_locations(), many=self.get_single_or_many_serializer())
+
+
+class LocationListNearbyWithStories(LocationListNearby, LocationListWithStories):
+    """
+    Retrieves a list of locations to given lat and lon coordinates.
+    Also includes all the story information attached to these locations.
+    """
+
+
+class SingleLocationWithStoryIDs(SingleLocation, LocationListWithStoryIDs):
+    """
+    Retrieves a single location by its ID.
+    Also includes a list of attached story IDs.
+    """
+
+
+class SingleLocationWithStoryTitle(SingleLocation, LocationListWithStoryTitle):
+    """
+    Retrieves a single location by its ID.
+    Also includes a list of attached story title.
+    """
+
+
+class SingleLocationWithStories(SingleLocation, LocationListWithStories):
+    """
+    Retrieves a single location by its ID.
+    Also includes a list of attached stories.
+    """
+
+
+class StorySerializerView(APIView):
+    """
+    List all saved stories.
+    """
+    def get_single_or_many_serializer(self):
+        return True
+
+    def get_stories(self):
+        return Story.objects.all()
+
+    def get_serializer(self):
+        return StorySerializer(self.get_stories(), many=self.get_single_or_many_serializer())
 
     def get(self, request, *args, **kwargs):
-        locations = self.get_locations(kwargs)
-
-        result = self.create_result_list(locations)
-
-        return HttpResponse(jsonpickle.encode(result, unpicklable=False), content_type=RETURN_TYPE_JSON)
-
-    def get_locations(self, kwargs):
-        return get_nearby_locations(kwargs["lat"], kwargs["lon"],
-                                    kwargs["maxlat"] if "maxlat" in kwargs else 0,
-                                    kwargs["maxlon"] if "maxlon" in kwargs else 0)
+        serializer = self.get_serializer()
+        return Response(serializer.data)
 
 
-class GetLocationsWithStoryCount(GetLocationJSONView):
+class StoryListWithTitle(StorySerializerView):
     """
-    Returns a list of locations and their count of stories to given lat and lon coordinates
-    Parameters: lat - Latitude, lon - Longitude
-    Optional: maxlat - Maximum Latitude, maxlon - Maximum Longitude
+    List all saved stories and their title.
     """
-
-    def add_additional_location_info(self, result_location, location):
-        result_location['story_count'] = str(location.entry_set.count())
-
-
-class GetSingleLocation(GetLocationJSONView):
-    """
-    Returns just a single location.
-    """
-
-    def get_locations(self, kwargs):
-        result = list()
-        result.append(Location.objects.get(pk=kwargs["id"]))
-        return result
-
-
-class GetLocationWithStoryCount(GetLocationsWithStoryCount, GetSingleLocation):
-    """
-    Same as above but for a single location
-    """
-    pass
-
-
-class GetLocationsWithStoryTitle(GetLocationJSONView):
-    """
-    Returns a list of locations and the titles of the stories attached to this location.
-    """
-
-    def add_additional_location_info(self, result_location, location):
-        result_location['stories'] = list()
-        for story in location.entry_set.all():
-            result_story = dict()
-            result_story["id"] = story.id
-            result_story["title"] = story.title
-            self.add_additional_story_info(result_story, story)
-            result_location['stories'].append(result_story)
-
-    def add_additional_story_info(self, result_story, story):
-        pass
-
-
-class GetLocationWithStoryTitle(GetLocationsWithStoryTitle, GetSingleLocation):
-    """
-    Same as above but for a single location
-    """
-    pass
-
-
-class GetLocationsWithStories(GetLocationsWithStoryTitle):
-    """
-    Returns a list of locations and the stories attached to it.
-    """
-
-    def add_additional_story_info(self, result_story, story):
-        result_story["abstract"] = story.abstract
-        result_story["author"] = story.author
-        result_story["text"] = story.text
-        result_story["time_start"] = str(story.time_start)
-        if story.time_end is not None:
-            result_story["time_end"] = str(story.time_end)
-        result_story["type"] = str(story.type)
-        if story.mediaobject_set.count > 0:
-            media_object = story.mediaobject_set.first()
-            if media_object is not None:
-                result_story_image = dict()
-                result_story_image["src"] = media_object.mediasource_set.first().file.url
-                result_story_image["alt"] = media_object.alt
-                result_story["image"] = result_story_image
-
-
-class GetLocationWithStories(GetLocationsWithStories, GetSingleLocation):
-    """
-    Same as above but for a single location
-    """
-    pass
-
-
-class GetAllStoriesJSONView(View):
-    """
-    Returns a list of all stories with or without a location.
-    """
-
-    def get(self, request, *args, **kwargs):
-        stories = Entry.objects.all()
-
-        result = self.create_result_list(stories)
-
-        return HttpResponse(jsonpickle.encode(result, unpicklable=False), content_type=RETURN_TYPE_JSON)
-
-    def create_result_list(self, stories):
-        result = dict()
-        result["stories"] = list()
-        for story in stories:
-            result_story = dict()
-            result_story["id"] = story.id
-            result_story["title"] = story.title
-            if story.location is not None:
-                result_story["location"] = story.location.id
-            self.add_additional_story_info(result_story, story)
-            result["stories"].append(result_story)
-
-        return result
-
-    def add_additional_story_info(self, result_story, story):
-        pass
-
-
-class GetAllStories(GetAllStoriesJSONView):
-    """
-    Returns a list of all the saved stories and their complete information.
-    """
-
-    def add_additional_story_info(self, result_story, story):
-        result_story["abstract"] = story.abstract
-        result_story["author"] = story.author
-        result_story["text"] = story.text
-        result_story["time_start"] = str(story.time_start)
-        if story.time_end is not None:
-            result_story["time_end"] = str(story.time_end)
-        result_story["type"] = str(story.type)
-        if story.mediaobject_set.count > 0:
-            media_object = story.mediaobject_set.first()
-            if media_object is not None:
-                result_story_image = dict()
-                result_story_image["src"] = media_object.mediasource_set.first().file.url
-                result_story_image["alt"] = media_object.alt
-                result_story["image"] = result_story_image
+    def get_serializer(self):
+        return StoryTitleSerializer(self.get_stories(), many=self.get_single_or_many_serializer())

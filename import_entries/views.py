@@ -11,9 +11,10 @@ from django.core.urlresolvers import reverse
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.views.generic import View
+from django.contrib.auth.models import User
 
 from stadtgedaechtnis_backend.utils import replace_multiple, get_nearby_locations
-from stadtgedaechtnis_backend.models import Location, Entry, EntryType, MediaObject, MediaSource
+from stadtgedaechtnis_backend.models import Location, Story, Asset, MediaSource
 
 
 __author__ = 'jpi'
@@ -68,6 +69,7 @@ class ImportView(TemplateView):
     source = ""
     redirect = False
     redirect_to = ""
+    request = None
 
     @abstractmethod
     def do_import(self):
@@ -81,6 +83,7 @@ class ImportView(TemplateView):
         Returns a HttpResponse after importing the entries.
         Only allows requests from localhost.
         """
+        self.request = request
         request_host = request.get_host()
         if self.interactive or request_host.startswith("localhost") or request_host.startswith("127.0.0.1"):
             # Interactive requests can be from any host.
@@ -99,11 +102,13 @@ class ImportView(TemplateView):
 
 def add_story(import_class, label, story, location_object=None):
     # only insert story if story does not exist so far
-    if not Entry.objects.filter(title=label).exists():
-        entry = Entry()
+    if not Story.objects.filter(title=label).exists():
+        entry = Story()
         entry.title = label
         entry.location = location_object
-        entry.author = story["author"]
+        # entry.author = story["author"]
+        # TODO: import author correctly
+        entry.author = import_class.request.user
         entry.abstract = story["preview"]
 
         if "timeStart" in story:
@@ -119,15 +124,14 @@ def add_story(import_class, label, story, location_object=None):
         if "timeEnd" in story:
             entry.time_end = story["timeEnd"]
 
-        entry.type = EntryType.objects.get(label=story["typename"])
         # TODO: add more infos
         entry.save()
 
         if "pic" in story and story["pic"] != "":
             picture_url = "http://www.stadtgeschichte-coburg.de/" + story["pic"]
             # populate the MediaObject
-            media_object = MediaObject()
-            media_object.type = MediaObject.IMAGE
+            media_object = Asset()
+            media_object.type = Asset.IMAGE
             media_object.created = datetime.now()
             media_object.modified = datetime.now()
             media_object.alt = story["pic_text"] if "pic_text" in story else ""

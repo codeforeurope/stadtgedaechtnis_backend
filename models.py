@@ -6,7 +6,7 @@ Created on 26.02.2014
 
 from django.utils.translation import ugettext as _
 from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.models import User
 from django.db.models.signals import post_delete
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
@@ -14,61 +14,47 @@ import os.path
 import mimetypes
 
 
-class ItemWithMedia(models.Model):
-    """
-    Superclass to distinguish between the different media-using objects
-    """
-    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    modified = models.DateTimeField(auto_now=True, null=True, blank=True)
-
-    def __unicode__(self):
-        try:
-            return self.entrytype.__unicode__()
-        except ObjectDoesNotExist:
-            try:
-                return self.location.__unicode__()
-            except ObjectDoesNotExist:
-                try:
-                    return self.entry.__unicode__()
-                except ObjectDoesNotExist:
-                    return self.id
-
-
-class EntryType(ItemWithMedia):
-    """
-    List of types a new entry can be
-    """
-    label = models.CharField(max_length=25)
-
-    def __unicode__(self):
-        return self.label
-
-
-class Location(ItemWithMedia):
+class Location(models.Model):
     """
     A Location with a geoposition
     """
     label = models.CharField(max_length=150)
+    description = models.TextField(null=True, blank=True)
     latitude = models.DecimalField(decimal_places=15, max_digits=18)
     longitude = models.DecimalField(decimal_places=15, max_digits=18)
+    altitude = models.DecimalField(decimal_places=5, max_digits=10)
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    modified = models.DateTimeField(auto_now=True, null=True, blank=True)
     dbpedia_link = models.CharField(max_length=500, null=True, blank=True)
 
     def __unicode__(self):
         return self.label + " [" + str(self.latitude) + ", " + str(self.longitude) + "]"
 
 
-class Entry(ItemWithMedia):
+class Category(models.Model):
+    """
+    One Category to be assigned to a story or asset
+    """
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    modified = models.DateTimeField(auto_now=True, null=True, blank=True)
+    name = models.CharField(max_length=150)
+    description = models.TextField(null=True, blank=True)
+
+
+class Story(models.Model):
     """
     One entry
     """
-    type = models.ForeignKey(EntryType, on_delete=models.PROTECT)
+    categories = models.ManyToManyField(Category)
     title = models.CharField(max_length=150)
     abstract = models.TextField()
     text = models.TextField(null=True, blank=True)
-    author = models.CharField(max_length=150)
+    author = models.ForeignKey(User)
     time_start = models.DateField()
     time_end = models.DateField(null=True, blank=True)
-    location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    modified = models.DateTimeField(auto_now=True, null=True, blank=True)
+    location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True, related_name="stories")
 
     def __unicode__(self):
         return self.title + " (" + self.author + ")"
@@ -79,7 +65,7 @@ class Entry(ItemWithMedia):
         """
         result = list()
         for index, media_object in enumerate(self.mediaobject_set.all()):
-            if index > 0 and media_object.type == MediaObject.IMAGE:
+            if index > 0 and media_object.type == Asset.IMAGE:
                 result.append(media_object)
 
         return result
@@ -90,13 +76,13 @@ class Entry(ItemWithMedia):
         """
         result = list()
         for media_object in self.mediaobject_set.all():
-            if media_object.type != MediaObject.IMAGE:
+            if media_object.type != Asset.IMAGE:
                 result.append(media_object)
 
         return result
 
 
-class MediaObject(models.Model):
+class Asset(models.Model):
     """
     Media Object to save images, videos or audio files that belong to an entry,
     a location or an entry type
@@ -104,16 +90,27 @@ class MediaObject(models.Model):
     VIDEO = "vid"
     IMAGE = "img"
     SOUND = "aud"
+    TEXT = "txt"
     MEDIA_TYPES = (
         (VIDEO, _("Video")),
         (IMAGE, _("Bild")),
         (SOUND, _("Audio")),
+        (TEXT, _("Text"))
     )
-    entry = models.ForeignKey(ItemWithMedia)
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
+    categories = models.ManyToManyField(Category)
     type = models.CharField(max_length=3, choices=MEDIA_TYPES, default=IMAGE)
     alt = models.CharField(max_length=300)
+    description = models.TextField(null=True, blank=True)
+    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    resolution = models.IntegerField(null=True, blank=True)
+    device = models.CharField(max_length=300)
+    length = models.IntegerField(null=True, blank=True)
+    is_readable = models.BooleanField(default=False)
+    story = models.ManyToManyField(Story)
+    location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True)
 
     def __unicode__(self):
         entry_name = " (" + self.entry.__unicode__() + ")"
@@ -133,7 +130,7 @@ class MediaSource(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
-    media_object = models.ForeignKey(MediaObject)
+    media_object = models.ForeignKey(Asset)
     file = models.FileField(upload_to=get_upload_path)
 
     def __unicode__(self):
