@@ -17,6 +17,7 @@ class StadtgedaechtnisAdmin(admin.AdminSite):
                            )
         return my_urls + urls
 
+
 admin.site = StadtgedaechtnisAdmin()
 admin.autodiscover()
 

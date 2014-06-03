@@ -55,18 +55,19 @@ class Story(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
     location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True, related_name="stories")
+    assets = models.ManyToManyField("Asset", related_name="assets")
 
     def __unicode__(self):
-        return self.title + " (" + self.author + ")"
+        return self.title + " (" + unicode(self.author) + ")"
 
     def get_additional_images(self):
         """
         Returns a list of additional images for this entry
         """
         result = list()
-        for index, media_object in enumerate(self.mediaobject_set.all()):
-            if index > 0 and media_object.type == Asset.IMAGE:
-                result.append(media_object)
+        for index, asset in enumerate(self.assets.all()):
+            if index > 0 and asset.type == Asset.IMAGE:
+                result.append(asset)
 
         return result
 
@@ -75,9 +76,9 @@ class Story(models.Model):
         Returns a list of additional media for this entry (no images)
         """
         result = list()
-        for media_object in self.mediaobject_set.all():
-            if media_object.type != Asset.IMAGE:
-                result.append(media_object)
+        for asset in self.assets.all():
+            if asset.type != Asset.IMAGE:
+                result.append(asset)
 
         return result
 
@@ -109,12 +110,11 @@ class Asset(models.Model):
     device = models.CharField(max_length=300)
     length = models.IntegerField(null=True, blank=True)
     is_readable = models.BooleanField(default=False)
-    story = models.ManyToManyField(Story)
+    stories = models.ManyToManyField(Story, related_name="stories", through=Story.assets.through)
     location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True)
 
     def __unicode__(self):
-        entry_name = " (" + self.entry.__unicode__() + ")"
-        return self.alt + entry_name
+        return self.alt + " (" + str(self.id) + ")"
 
 
 class MediaSource(models.Model):
@@ -124,13 +124,13 @@ class MediaSource(models.Model):
 
     def get_upload_path(self, filename):
         i = 0
-        while os.path.isfile(settings.MEDIA_ROOT + str(self.media_object.entry.id) + "/" + str(i) + filename):
+        while os.path.isfile(settings.MEDIA_ROOT + str(self.asset.id) + "/" + str(i) + filename):
             i += 1
-        return str(self.media_object.entry.id) + "/" + str(i) + filename
+        return str(self.asset.id) + "/" + str(i) + filename
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
-    media_object = models.ForeignKey(Asset)
+    asset = models.ForeignKey(Asset)
     file = models.FileField(upload_to=get_upload_path)
 
     def __unicode__(self):
