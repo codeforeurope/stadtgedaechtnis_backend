@@ -31,6 +31,12 @@ urlpatterns = patterns('',
     url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<maxlat>\d{1,3}\.\d{1,10})/'
         '(?P<lon>\d{1,3}\.\d{1,10})/(?P<maxlon>\d{1,3}\.\d{1,10})/stories/$', LocationListNearbyWithStories.as_view(),
         name="get-locations-with-stories"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<lon>\d{1,3}\.\d{1,10})/stories/title/image/$',
+        LocationListNearbyWithImages.as_view(), name="get-locations-with-stories"),
+    url(r'^locations/(?P<lat>\d{1,3}\.\d{1,10})/(?P<maxlat>\d{1,3}\.\d{1,10})/'
+        '(?P<lon>\d{1,3}\.\d{1,10})/(?P<maxlon>\d{1,3}\.\d{1,10})/stories/title/image/$',
+        LocationListNearbyWithImages.as_view(),
+        name="get-locations-with-stories"),
     url(r'^locations/(?P<id>\d+)/$', SingleLocation.as_view(),
         name="get-location"),
     url(r'^locations/(?P<id>\d+)/story_count/$', SingleLocationWithStoryIDs.as_view(),

@@ -130,7 +130,7 @@ class MediaSource(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
-    asset = models.ForeignKey(Asset)
+    asset = models.ForeignKey(Asset, related_name="sources")
     file = models.FileField(upload_to=get_upload_path)
 
     def __unicode__(self):

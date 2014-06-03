@@ -157,6 +157,14 @@ class LocationListNearbyWithStories(LocationListNearby, LocationListWithStories)
     """
 
 
+class LocationListNearbyWithImages(LocationListNearby):
+    """
+    Retrieves a list of locations. Also includes all the story information attached to these locations.
+    """
+    def get_serializer(self):
+        return LocationSerializerWithStoryImages(self.get_locations(), many=self.get_single_or_many_serializer())
+
+
 class SingleLocationWithStoryIDs(SingleLocation, LocationListWithStoryIDs):
     """
     Retrieves a single location by its ID.

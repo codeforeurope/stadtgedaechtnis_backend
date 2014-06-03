@@ -21,7 +21,7 @@ class LocationSerializerWithStoryIDs(serializers.ModelSerializer):
 class StoryTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Story
-        fields = ('id', 'title', 'location')
+        fields = ('id', 'title', 'abstract', 'location')
 
 
 class LocationSerializerWithStoryTitle(serializers.ModelSerializer):
@@ -31,6 +31,30 @@ class LocationSerializerWithStoryTitle(serializers.ModelSerializer):
                   'created', 'modified', 'dbpedia_link', 'stories')
 
     stories = StoryTitleSerializer(many=True)
+
+
+class AssetURLSerializer(serializers.ModelSerializer):
+    class AssetSourceSerializer(serializers.URLField):
+        def to_native(self, value):
+            return value.instance.sources.first().file.url
+
+    class Meta:
+        model = Asset
+        fields = ('alt', 'sources')
+
+    sources = AssetSourceSerializer()
+
+
+class StoryImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Story
+        fields = ('id', 'title', 'abstract', 'assets')
+
+    assets = AssetURLSerializer(many=False)
+
+
+class LocationSerializerWithStoryImages(LocationSerializerWithStoryTitle):
+    stories = StoryImageSerializer(many=True)
 
 
 class StorySerializer(serializers.ModelSerializer):
