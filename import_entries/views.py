@@ -135,15 +135,15 @@ def add_story(import_class, label, story, location_object=None):
             media_object.created = datetime.now()
             media_object.modified = datetime.now()
             media_object.alt = story["pic_text"] if "pic_text" in story else ""
-            media_object.entry = entry
             media_object.save()
+            entry.assets.add(media_object)
 
             # populate the MediaSource
             media_source = MediaSource()
             media_source.created = datetime.now()
             media_source.modified = datetime.now()
 
-            media_source.media_object = media_object
+            media_source.asset = media_object
 
             # get a correct upload path for the image
             filename = media_source.get_upload_path("upload.jpg")
