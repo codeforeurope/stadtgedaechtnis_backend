@@ -45,4 +45,5 @@ urlpatterns = patterns('',
     url(r'^locations/stories/$', LocationListWithStories.as_view(), name="list-locations-with-stories"),
     url(r'^stories/title/$', StoryListWithTitle.as_view(), name="get-all-stories-with-title"),
     url(r'^stories/', StorySerializerView.as_view(), name="get-all-stories"),
+    url(r'^stories/(?P<id>\d+)/$', StoryWithAssets.as_view(), name="get-story"),
     )

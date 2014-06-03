@@ -37,7 +37,14 @@ class StorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Story
         fields = ('id', 'title', 'abstract', 'text', 'author',
-                  'time_start', 'time_end', 'created', 'modified', 'location')
+                  'time_start', 'time_end', 'created', 'modified', 'location', 'categories')
+
+
+class StoryWithAssetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Story
+        fields = ('id', 'title', 'abstract', 'text', 'author',
+                  'time_start', 'time_end', 'created', 'modified', 'location', 'categories', 'assets')
 
 
 class LocationSerializerWithStories(serializers.ModelSerializer):

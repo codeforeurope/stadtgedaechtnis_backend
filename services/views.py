@@ -202,3 +202,17 @@ class StoryListWithTitle(StorySerializerView):
     """
     def get_serializer(self):
         return StoryTitleSerializer(self.get_stories(), many=self.get_single_or_many_serializer())
+
+
+class StoryWithAssets(StorySerializerView):
+    """
+    Retrieves one particular story and their asset IDs
+    """
+    def get_single_or_many_serializer(self):
+        return False
+
+    def get_stories(self):
+        return Story.objects.get(pk=self.kwargs["id"])
+
+    def get_serializer(self):
+        return StoryWithAssetSerializer(self.get_stories(), many=self.get_single_or_many_serializer())
