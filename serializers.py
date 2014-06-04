@@ -21,7 +21,7 @@ class LocationSerializerWithStoryIDs(serializers.ModelSerializer):
 class StoryTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Story
-        fields = ('id', 'title', 'abstract', 'location')
+        fields = ('id', 'title', 'location')
 
 
 class LocationSerializerWithStoryTitle(serializers.ModelSerializer):
