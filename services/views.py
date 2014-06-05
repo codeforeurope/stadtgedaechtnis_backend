@@ -186,6 +186,13 @@ class SingleLocationWithStories(SingleLocation, LocationListWithStories):
     """
 
 
+class SingleLocationWithStoriesImage(SingleLocation, LocationListNearbyWithImages):
+    """
+    Retrieves a single location by ids ID.
+    also includes al ist of attached stories and images.
+    """
+
+
 class StorySerializerView(APIView):
     """
     List all saved stories.
@@ -212,15 +219,21 @@ class StoryListWithTitle(StorySerializerView):
         return StoryTitleSerializer(self.get_stories(), many=self.get_single_or_many_serializer())
 
 
-class StoryWithAssets(StorySerializerView):
+class StoryWithAssets(GetSingleSerializer, StorySerializerView):
     """
     Retrieves one particular story and their asset IDs
     """
-    def get_single_or_many_serializer(self):
-        return False
 
     def get_stories(self):
         return Story.objects.get(pk=self.kwargs["id"])
 
     def get_serializer(self):
         return StoryWithAssetSerializer(self.get_stories(), many=self.get_single_or_many_serializer())
+
+
+class StoryWithAssetImage(StoryWithAssets):
+    """
+    Retrieves one particular story and their assets plus first URL.
+    """
+    def get_serializer(self):
+        return StoryWithAssetImageSerializer(self.get_stories(), many=self.get_single_or_many_serializer())

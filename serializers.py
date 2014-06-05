@@ -36,7 +36,10 @@ class LocationSerializerWithStoryTitle(serializers.ModelSerializer):
 class AssetURLSerializer(serializers.ModelSerializer):
     class AssetSourceSerializer(serializers.URLField):
         def to_native(self, value):
-            return value.instance.sources.first().file.url
+            if value.instance.sources.first() is not None:
+                return value.instance.sources.first().file.url
+            else:
+                return None
 
     class Meta:
         model = Asset
@@ -69,6 +72,10 @@ class StoryWithAssetSerializer(serializers.ModelSerializer):
         model = Story
         fields = ('id', 'title', 'abstract', 'text', 'author',
                   'time_start', 'time_end', 'created', 'modified', 'location', 'categories', 'assets')
+
+
+class StoryWithAssetImageSerializer(StoryWithAssetSerializer):
+    assets = AssetURLSerializer(many=False)
 
 
 class LocationSerializerWithStories(serializers.ModelSerializer):
