@@ -60,13 +60,6 @@ class LocationSerializerWithStoryImages(LocationSerializerWithStoryTitle):
     stories = StoryImageSerializer(many=True)
 
 
-class StorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Story
-        fields = ('id', 'title', 'abstract', 'text', 'author',
-                  'time_start', 'time_end', 'created', 'modified', 'location', 'categories')
-
-
 class StoryWithAssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Story
@@ -84,4 +77,4 @@ class LocationSerializerWithStories(serializers.ModelSerializer):
         fields = ('id', 'label', 'description', 'latitude', 'longitude', 'altitude',
                   'created', 'modified', 'dbpedia_link', 'stories')
 
-    stories = StorySerializer(many=True)
+    stories = StoryWithAssetSerializer(many=True)

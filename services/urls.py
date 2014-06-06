@@ -55,4 +55,8 @@ urlpatterns = patterns('',
     url(r'^stories/$', StorySerializerView.as_view(), name="get-all-stories"),
     url(r'^stories/(?P<id>\d+)/$', StoryWithAssets.as_view(), name="get-story"),
     url(r'^stories/(?P<id>\d+)/image/$', StoryWithAssetImage.as_view(), name="get-story"),
+    url(r'^stories/title/(?P<query>[^/]+)/title/$', StoryQueryWithTitle.as_view(), name="query-story-title"),
+    url(r'^stories/text/(?P<query>[^/]+)/title/$', StoryTextQueryWithTitle.as_view(), name="query-story-text"),
+    url(r'^stories/title/(?P<query>[^/]+)/$', StoryTitleQuery.as_view(), name="query-story-title-list"),
+    url(r'^stories/text/(?P<query>[^/]+)/$', StoryTextAndTitleQuery.as_view(), name="query-story-text-list"),
     )

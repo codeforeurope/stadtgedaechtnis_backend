@@ -4,14 +4,14 @@ from django.views.generic import View
 from django.http import HttpResponse
 from SPARQLWrapper import SPARQLWrapper, JSON
 from stadtgedaechtnis_backend.utils import get_nearby_locations
-from stadtgedaechtnis_backend.models import Story, Location
 from django.http import Http404
+from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from stadtgedaechtnis_backend.serializers import *
+from django.views.decorators.gzip import gzip_page
+from django.utils.decorators import method_decorator
 
-import jsonpickle
 import json
 
 RETURN_TYPE_JSON = "application/json"
@@ -83,6 +83,10 @@ class LocationSerializerView(APIView):
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer()
         return Response(serializer.data)
+
+    @method_decorator(gzip_page)
+    def dispatch(self, request, *args, **kwargs):
+        return super(LocationSerializerView, self).dispatch(request, *args, **kwargs)
 
 
 class SingleLocation(GetSingleSerializer, LocationSerializerView):
@@ -204,11 +208,15 @@ class StorySerializerView(APIView):
         return Story.objects.all()
 
     def get_serializer(self):
-        return StorySerializer(self.get_stories(), many=self.get_single_or_many_serializer())
+        return StoryWithAssetSerializer(self.get_stories(), many=self.get_single_or_many_serializer())
 
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer()
         return Response(serializer.data)
+
+    @method_decorator(gzip_page)
+    def dispatch(self, request, *args, **kwargs):
+        return super(StorySerializerView, self).dispatch(request, *args, **kwargs)
 
 
 class StoryListWithTitle(StorySerializerView):
@@ -237,3 +245,27 @@ class StoryWithAssetImage(StoryWithAssets):
     """
     def get_serializer(self):
         return StoryWithAssetImageSerializer(self.get_stories(), many=self.get_single_or_many_serializer())
+
+
+class StoryTitleQuery(StorySerializerView):
+    """
+    Retrieves a story matching a given query
+    """
+
+    def get_stories(self):
+        return Story.objects.filter(title__icontains=self.kwargs["query"])
+
+
+class StoryTextAndTitleQuery(StorySerializerView):
+    def get_stories(self):
+        return Story.objects.filter(Q(text__icontains=self.kwargs["query"]) | Q(title__icontains=self.kwargs["query"]))
+
+
+class StoryQueryWithTitle(StoryTitleQuery, StoryListWithTitle):
+    """
+    Retrieves a list of stories with matching query.
+    """
+
+
+class StoryTextQueryWithTitle(StoryTextAndTitleQuery, StoryListWithTitle):
+    pass
