@@ -10,4 +10,6 @@ urlpatterns = patterns('',
         name="get-nearby-places"),
     url(r'locations/', include("stadtgedaechtnis_backend.services.urlpatterns.locations")),
     url(r'stories/', include("stadtgedaechtnis_backend.services.urlpatterns.stories")),
+    url(r'users/', include("stadtgedaechtnis_backend.services.urlpatterns.users")),
+    url(r'sessions/', include("stadtgedaechtnis_backend.services.urlpatterns.sessions")),
     )

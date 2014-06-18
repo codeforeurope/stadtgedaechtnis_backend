@@ -52,7 +52,7 @@ class Story(models.Model):
     title = models.CharField(max_length=150)
     abstract = models.TextField()
     text = models.TextField(null=True, blank=True)
-    author = models.ForeignKey(User)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL)
     time_start = models.DateField()
     time_end = models.DateField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)

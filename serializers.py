@@ -1,6 +1,7 @@
 __author__ = 'jpi'
 
 from rest_framework import serializers
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from stadtgedaechtnis_backend.models import *
 
 
@@ -113,10 +114,22 @@ class LocationSerializerWithStories(serializers.ModelSerializer):
     stories = StoryWithAssetSerializer(many=True)
 
 
-class UserSerizalier(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializes a user with an absolute URL.
     """
     class Meta:
         model = User
-        fields = ('url', 'id', 'username', 'first_name', 'last_name')
+        fields = ('url', 'id', 'username', 'first_name', 'last_name', 'password', 'email')
+
+    class PasswordField(serializers.CharField):
+        def from_native(self, value):
+            from django.contrib.auth import hashers
+
+            return hashers.make_password(value)
+
+    password = PasswordField(write_only=True)
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    email = serializers.CharField(required=True)
+    url = serializers.HyperlinkedIdentityField(view_name="stadtgedaechtnis_backend:user-detail")
