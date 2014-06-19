@@ -3,7 +3,8 @@ __author__ = 'jpi'
 from rest_framework.generics import GenericAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.views import APIView
 from stadtgedaechtnis_backend.serializers import *
-from stadtgedaechtnis_backend.services.authentication.permissions import IsSameUserAsLoggedIn
+from stadtgedaechtnis_backend.services.authentication.permissions import \
+    IsSameUserAsLoggedIn, IsSameSessionAsLoggedIn, IsAuthenticatedOrModerated
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework import status
 from rest_framework.response import Response
@@ -29,6 +30,7 @@ class UserUpdateView(UserView, UpdateAPIView):
     """
     View that updates a user
     """
+    permission_classes = (IsSameUserAsLoggedIn, IsAuthenticatedOrModerated, )
 
 
 class CreateSessionView(ObtainAuthToken):
@@ -43,10 +45,12 @@ class CreateSessionView(ObtainAuthToken):
             login(request, user)
 
             request.session["user"] = user.id
+            # set login timeout to ten minutes
             request.session.set_expiry(600)
+            # save session to obtain a session key
             request.session.save()
             session_id = request.session.session_key
-
+            # print Location header
             headers = {'Location': self.get_absolute_url(request, session_id)}
             return Response({'session_id': session_id}, status=status.HTTP_201_CREATED,
                             headers=headers)
@@ -64,7 +68,7 @@ class SessionView(APIView):
     """
     View that handles session retrieving and session destroying.
     """
-    permission_classes = (IsSameUserAsLoggedIn, )
+    permission_classes = (IsSameSessionAsLoggedIn, )
 
     def get(self, request, *args, **kwargs):
         if "pk" not in kwargs:

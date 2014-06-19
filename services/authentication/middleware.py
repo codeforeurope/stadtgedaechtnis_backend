@@ -21,22 +21,17 @@ class TokenSessionMiddleware(object):
         elif len(auth) > 2:
             msg = 'Invalid token header. Token string should not contain spaces.'
             return HttpResponseBadRequest(msg)
-        elif len(auth) == 2:
+        elif len(auth) == 2 and auth[0].lower() == b'token':
             session_key = auth[1]
 
         request.session = engine.SessionStore(session_key)
 
     def process_response(self, request, response):
-        try:
-            modified = request.session.modified
-        except AttributeError:
-            pass
-        else:
-            if modified or settings.SESSION_SAVE_EVERY_REQUEST:
-                # Save the session data and refresh the client cookie.
-                # Skip session save for 500 responses, refs #3881.
-                if response.status_code != 500:
-                    request.session.save()
+        # save session if no server error occured
+        # that way, users will stay logged in while doing requests.
+        if response.status_code != 500:
+            request.session.save()
+
         return response
 
 
@@ -47,6 +42,19 @@ class TokenSessionAuthentication(SessionAuthentication):
     by the Authorization HTTP header, but provides a Authentication Header.
     """
 
+    def authenticate(self, request):
+        auth = get_authorization_header(request).split()
+
+        from rest_framework.authentication import exceptions
+
+        _request = request._request
+        user = getattr(_request, 'user', None)
+
+        if len(auth) == 2 and auth[0].lower() == b'token' and not user.is_authenticated():
+            raise exceptions.AuthenticationFailed('Invalid token')
+
+        return super(TokenSessionAuthentication, self).authenticate(request)
+
     def authenticate_header(self, request):
         return 'Token'
 
@@ -55,7 +63,8 @@ class TokenSessionAuthentication(SessionAuthentication):
         Enforce CSRF validation for session based authentication.
         Only feasible when the authentication mode is set to moderation.
         """
-        if settings.AUTHENTICATION_MODE == "moderation":
+        authentication_mode = getattr(settings, 'AUTHENTICATION_MODE', "user_authentication")
+        if authentication_mode == "moderation":
             from rest_framework.authentication import CSRFCheck, exceptions
 
             reason = CSRFCheck().process_view(request, None, (), {})

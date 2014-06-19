@@ -2,7 +2,7 @@ __author__ = 'jpi'
 
 from django.conf.urls import patterns, url, include
 
-from stadtgedaechtnis_backend.services.views import GetNearbyPlacesDBPedia
+from stadtgedaechtnis_backend.services.views.locations import GetNearbyPlacesDBPedia
 
 
 urlpatterns = patterns('',
