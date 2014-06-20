@@ -96,13 +96,6 @@ class LocationListWithStories(LocationList):
     serializer_class = LocationSerializerWithStories
 
 
-class LocationListNearbyWithImages(LocationList):
-    """
-    Retrieves a list of locations. Also includes all the story information attached to these locations.
-    """
-    serializer_class = LocationSerializerWithStoryImages
-
-
 class SingleLocation(LocationView, RetrieveAPIView):
     """
     Gets a single Location.
@@ -130,13 +123,6 @@ class SingleLocationWithStories(SingleLocation, LocationListWithStories):
     """
 
 
-class SingleLocationWithStoriesImage(SingleLocation, LocationListNearbyWithImages):
-    """
-    Retrieves a single location by ids ID.
-    also includes al ist of attached stories and images.
-    """
-
-
 class LocationListNearby(LocationList):
     """
     Retrieves a list of locations to given lat and lon coordinates.
@@ -153,13 +139,27 @@ class LocationListNearbyWithStoryIDs(LocationListNearby, LocationListWithStoryID
     """
 
 
+class LocationListNearbyWithImages(LocationListNearby):
+    """
+    Retrieves a list of locations. Also includes all the story information attached to these locations.
+    """
+    serializer_class = LocationSerializerWithStoryImages
+
+
+class SingleLocationWithStoriesImage(SingleLocation, LocationListNearbyWithImages):
+    """
+    Retrieves a single location by ids ID.
+    also includes al ist of attached stories and images.
+    """
+
+
 class LocationListNearbyWithStoryTitle(LocationListWithStoryTitle, LocationListNearby):
     """
     Retrieves a list of locations to given lat and lon coordinates. Also includes a list of attached story titles.
     """
 
 
-class LocationListNearbyWithStories(LocationListNearby, LocationListWithStories):
+class LocationListNearbyWithStories(LocationListWithStories, LocationListNearby):
     """
     Retrieves a list of locations to given lat and lon coordinates.
     Also includes all the story information attached to these locations.
