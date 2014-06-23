@@ -8,7 +8,7 @@ from stadtgedaechtnis_backend.services.authentication.permissions import \
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework import status
 from rest_framework.response import Response
-from django.contrib.auth import login
+from django.contrib.auth import login, get_user_model
 from django.http.response import HttpResponseBadRequest, HttpResponseForbidden
 
 
@@ -16,7 +16,7 @@ class UserView(GenericAPIView):
     """
     Class that handles user creation and updating.
     """
-    queryset = User.objects.all()
+    queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
 
 

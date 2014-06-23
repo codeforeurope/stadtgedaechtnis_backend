@@ -5,7 +5,7 @@ import json
 from django.views.generic import View
 from django.http import HttpResponse
 from SPARQLWrapper import SPARQLWrapper, JSON
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from stadtgedaechtnis_backend.utils import get_nearby_locations
 from stadtgedaechtnis_backend.services.views import GZIPAPIView
 from stadtgedaechtnis_backend.serializers import *
@@ -96,10 +96,11 @@ class LocationListWithStories(LocationList):
     serializer_class = LocationSerializerWithStories
 
 
-class SingleLocation(LocationView, RetrieveAPIView):
+class SingleLocation(LocationView, RetrieveUpdateDestroyAPIView):
     """
     Gets a single Location.
     """
+    permission_classes = (IsAuthenticatedOrReadOnlyOrModerated, )
 
 
 class SingleLocationWithStoryIDs(SingleLocation, LocationListWithStoryIDs):
