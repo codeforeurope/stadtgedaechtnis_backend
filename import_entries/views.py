@@ -3,6 +3,7 @@ import urllib2
 import json
 import time
 import os
+import re
 from datetime import datetime
 from decimal import Decimal
 
@@ -11,10 +12,10 @@ from django.core.urlresolvers import reverse
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.views.generic import View
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from stadtgedaechtnis_backend.utils import replace_multiple, get_nearby_locations
-from stadtgedaechtnis_backend.models import Location, Story, Asset, MediaSource
+from stadtgedaechtnis_backend.models import Location, Story, Asset, MediaSource, find_user_by_name
 
 
 __author__ = 'jpi'
@@ -27,32 +28,45 @@ def load_json(source):
         response = urllib2.urlopen(source)
         result = response.read()
         dictionary = {
-            "id:": "\"id\":",
-            "isDuration:": "\"isDuration\":",
-            "type:": "\"type\":",
-            "addressLatLng:": "\"addressLatLng\":",
-            "typename:": "\"typename\":",
-            "created:": "\"created\":",
-            "label:": "\"label\":",
-            "preview:": "\"preview\":",
-            "pic:": "\"pic\":",
-            "pic_text:": "\"pic_text\":",
-            "timeStart:": "\"timeStart\":",
-            "author:": "\"author\":",
-            "www:": "\"www\":",
-            "details:": "\"details\":",
-            "timeEnd:": "\"timeEnd\":",
-            "nr:": "\"nr\":",
-            "age:": "\"age\":",
-            "types:": "\"types\":",
+            " id:": " \"id\":",
+            " isDuration:": " \"isDuration\":",
+            " type:": " \"type\":",
+            " addressLatLng:": " \"addressLatLng\":",
+            " typename:": " \"typename\":",
+            " created:": " \"created\":",
+            " label:": " \"label\":",
+            " preview:": " \"preview\":",
+            " pic:": " \"pic\":",
+            " pic_text:": " \"pic_text\":",
+            " timeStart:": " \"timeStart\":",
+            " author:": " \"author\":",
+            " www:": " \"www\":",
+            " details:": " \"details\":",
+            " timeEnd:": " \"timeEnd\":",
+            " nr:": " \"nr\":",
+            " age:": " \"age\":",
+            " types:": " \"types\":",
             "pluralLabel:": "\"pluralLabel\":",
-            "properties:": "\"properties\":",
+            " properties:": " \"properties\":",
             "valueType:": "\"valueType\":",
+            " quellen:": " \"quellen\":",
+            " richtext:": " \"richtext\":",
             "	": "",
-            ",\r\n,": ",\r\n",
+            "\r\n": "",
+            ",\r\n,": ",",
         }
         # make the JSON valid
         result = replace_multiple(result, dictionary)
+
+        def replace_quotes(match):
+            richtext = match.group(0)
+            original_group_1 = match.groups()[1]
+            group_1 = original_group_1.replace("\"", "&quot;")
+            result = richtext.replace(original_group_1, group_1)
+            return result
+
+        result = re.sub(r'(\"richtext\": \"([^\r]*)\"\r)', replace_quotes, result)
+        result = re.sub(r'(\"quellen\": \"([^\r]*)\", \"richtext\":)', replace_quotes, result)
         json_result = json.loads(result)
         # select all the items
         items = json_result["items"]
@@ -106,9 +120,18 @@ def add_story(import_class, label, story, location_object=None):
         entry = Story()
         entry.title = label
         entry.location = location_object
-        # entry.author = story["author"]
-        # TODO: import author correctly
-        entry.author = import_class.request.user
+
+        entry_author = story["author"]
+        try:
+            authors = find_user_by_name(entry_author)
+            entry.author = authors[0]
+        except get_user_model().DoesNotExist:
+            author = get_user_model().objects.create_user(entry_author.replace(" ", "_"))
+            author.first_name = entry_author[:entry_author.rindex(" ")]
+            author.last_name = entry_author[entry_author.rindex(" "):]
+            author.save()
+            entry.author = author
+
         entry.abstract = story["preview"]
 
         if "timeStart" in story:
@@ -124,7 +147,12 @@ def add_story(import_class, label, story, location_object=None):
         if "timeEnd" in story:
             entry.time_end = story["timeEnd"]
 
-        # TODO: add more infos
+        if "quellen" in story:
+            entry.sources = story["quellen"]
+
+        if "richtext" in story:
+            entry.text = story["richtext"]
+
         entry.save()
 
         if "pic" in story and story["pic"] != "":

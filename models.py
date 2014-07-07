@@ -9,6 +9,7 @@ from django.db import models
 from django.db.models.signals import post_delete
 from django.conf import settings
 from django.dispatch import receiver
+from django.contrib.auth import get_user_model
 import os.path
 import mimetypes
 
@@ -48,6 +49,7 @@ class Story(models.Model):
     title = models.CharField(max_length=150)
     abstract = models.TextField()
     text = models.TextField(null=True, blank=True)
+    sources = models.TextField(null=True, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL)
     time_start = models.DateField()
     time_end = models.DateField(null=True, blank=True)
@@ -99,7 +101,7 @@ class Asset(models.Model):
     )
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
-    categories = models.ManyToManyField(Category)
+    categories = models.ManyToManyField(Category, null=True, blank=True)
     type = models.CharField(max_length=3, choices=MEDIA_TYPES, default=IMAGE)
     alt = models.CharField(max_length=300)
     description = models.TextField(null=True, blank=True)
@@ -143,3 +145,17 @@ class MediaSource(models.Model):
 def delete_file(sender, instance, **kwargs):
     if instance.file is not None:
         instance.file.delete(False)
+
+
+def find_user_by_name(query_name):
+    """
+    Finds a user by its full name
+    :param query_name: full name to query
+    :return: a list of users matching the query
+    """
+    qs = get_user_model().objects.all()
+    for term in query_name.split():
+        qs = qs.filter(models.Q(first_name__icontains=term) | models.Q(last_name__icontains=term))
+    if len(qs) == 0:
+        raise get_user_model().DoesNotExist
+    return qs
