@@ -62,8 +62,9 @@ def load_json(source):
             richtext = match.group(0)
             original_group_1 = match.groups()[1]
             group_1 = original_group_1.replace("\"", "&quot;")
-            result = richtext.replace(original_group_1, group_1)
-            return result
+            group_1 = re.sub(r'=&quot;([a-zA-Z0-9_\-#]*)&quot;', r"='\1'", group_1)
+            return_result = richtext.replace(original_group_1, group_1)
+            return return_result
 
         result = re.sub(r'(\"richtext\": \"([^\r]*)\"\r)', replace_quotes, result)
         result = re.sub(r'(\"quellen\": \"([^\r]*)\", \"richtext\":)', replace_quotes, result)
