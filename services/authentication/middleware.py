@@ -4,35 +4,44 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from rest_framework.authentication import get_authorization_header, SessionAuthentication
 from django.http.response import HttpResponseBadRequest
+from django.contrib.sessions.middleware import SessionMiddleware
 
 
-class TokenSessionMiddleware(object):
+class TokenSessionMiddleware(SessionMiddleware):
     """
     Middleware that processes the sessions similar to the SessionMiddleware of Django.
     """
     def process_request(self, request):
-        engine = import_module(settings.SESSION_ENGINE)
-        auth = get_authorization_header(request).split()
-        session_key = None
+        # redirect to normal SessionMiddleware if the path starts with admin
+        if request.path.startswith("/admin/"):
+            super(TokenSessionMiddleware, self).process_request(request)
+        else:
+            engine = import_module(settings.SESSION_ENGINE)
+            auth = get_authorization_header(request).split()
+            session_key = None
 
-        if len(auth) == 1:
-            msg = 'Invalid token header. No credentials provided.'
-            return HttpResponseBadRequest(msg)
-        elif len(auth) > 2:
-            msg = 'Invalid token header. Token string should not contain spaces.'
-            return HttpResponseBadRequest(msg)
-        elif len(auth) == 2 and auth[0].lower() == b'token':
-            session_key = auth[1]
+            if len(auth) == 1:
+                msg = 'Invalid token header. No credentials provided.'
+                return HttpResponseBadRequest(msg)
+            elif len(auth) > 2:
+                msg = 'Invalid token header. Token string should not contain spaces.'
+                return HttpResponseBadRequest(msg)
+            elif len(auth) == 2 and auth[0].lower() == b'token':
+                session_key = auth[1]
 
-        request.session = engine.SessionStore(session_key)
+            request.session = engine.SessionStore(session_key)
 
     def process_response(self, request, response):
-        # save session if no server error occured
-        # that way, users will stay logged in while doing requests.
-        if response.status_code != 500:
-            request.session.save()
+        # redirect to normal SessionMiddleware if the path starts with admin
+        if request.path.startswith("/admin/"):
+            return super(TokenSessionMiddleware, self).process_response(request, response)
+        else:
+            # save session if no server error occured
+            # that way, users will stay logged in while doing requests.
+            if response.status_code != 500:
+                request.session.save()
 
-        return response
+            return response
 
 
 class TokenSessionAuthentication(SessionAuthentication):
