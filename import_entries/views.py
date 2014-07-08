@@ -20,6 +20,8 @@ from stadtgedaechtnis_backend.models import Location, Story, Asset, MediaSource,
 
 __author__ = 'jpi'
 
+STADTGEDAECHTNIS_URL = "http://www.stadtgeschichte-coburg.de/"
+
 
 def load_json(source):
         """
@@ -27,6 +29,7 @@ def load_json(source):
         """
         response = urllib2.urlopen(source)
         result = response.read()
+        # add double quotes
         dictionary = {
             " id:": " \"id\":",
             " isDuration:": " \"isDuration\":",
@@ -58,16 +61,24 @@ def load_json(source):
         # make the JSON valid
         result = replace_multiple(result, dictionary)
 
-        def replace_quotes(match):
+        def fix_richtext(match):
+            # replace " in richtext with &quot;
             richtext = match.group(0)
             original_group_1 = match.groups()[1]
             group_1 = original_group_1.replace("\"", "&quot;")
-            group_1 = re.sub(r'=&quot;([a-zA-Z0-9_\-#]*)&quot;', r"='\1'", group_1)
+
+            def replace_quot(quot_match):
+                replace_in = quot_match.group(0)
+                # replace &quot; in html tags with '
+                return replace_in.replace("&quot;", "'")
+
+            group_1 = re.sub(r'<[^/]([^>]*)>', replace_quot, group_1)
             return_result = richtext.replace(original_group_1, group_1)
             return return_result
 
-        result = re.sub(r'(\"richtext\": \"([^\r]*)\"\r)', replace_quotes, result)
-        result = re.sub(r'(\"quellen\": \"([^\r]*)\", \"richtext\":)', replace_quotes, result)
+        # clean richtext and quellen section
+        result = re.sub(r'(\"richtext\": \"([^\r]*)\"\r)', fix_richtext, result)
+        result = re.sub(r'(\"quellen\": \"([^\r]*)\", \"richtext\":)', fix_richtext, result)
         json_result = json.loads(result)
         # select all the items
         items = json_result["items"]
@@ -115,6 +126,36 @@ class ImportView(TemplateView):
         return response
 
 
+def download_image(entry, picture_url, alt=""):
+    media_object = Asset()
+    media_object.type = Asset.IMAGE
+    media_object.created = datetime.now()
+    media_object.modified = datetime.now()
+    if alt is None:
+        alt = ""
+    media_object.alt = alt
+    media_object.save()
+    entry.assets.add(media_object)
+    # populate the MediaSource
+    media_source = MediaSource()
+    media_source.created = datetime.now()
+    media_source.modified = datetime.now()
+    media_source.asset = media_object
+    # get a correct upload path for the image
+    filename = media_source.get_upload_path("upload.jpg")
+    download_file = urllib2.urlopen(picture_url)
+    # create intermittent directories if not present
+    if not os.path.exists(os.path.dirname(settings.MEDIA_ROOT + filename)):
+        os.makedirs(os.path.dirname(settings.MEDIA_ROOT + filename))
+    # open local file
+    media_file = open(settings.MEDIA_ROOT + filename, "wb")
+    # download and save file at once (memory!)
+    media_file.write(download_file.read())
+    media_file.close()
+    media_source.file.name = filename
+    media_source.save()
+
+
 def add_story(import_class, label, story, location_object=None):
     # only insert story if story does not exist so far
     if not Story.objects.filter(title=label).exists():
@@ -151,43 +192,32 @@ def add_story(import_class, label, story, location_object=None):
         if "quellen" in story:
             entry.sources = story["quellen"]
 
+        entry.save()
+
         if "richtext" in story:
-            entry.text = story["richtext"]
+            richtext = story["richtext"]
+
+            def replace_img(match):
+                groupdict = match.groupdict()
+                src = groupdict["src"]
+                alt = groupdict["alt"]
+                if src is not None:
+                    url = STADTGEDAECHTNIS_URL + src
+                    download_image(entry, url, alt)
+                return ""
+
+            richtext = re.sub(r'<img[^>]*src=\'(?P<src>[^>\']*)\'[^>]*alt=\'(?P<alt>[^>\']*)\'[^>]*[/]?>',
+                              replace_img, richtext)
+            richtext = re.sub(r'<img[^>]*alt=\'(?P<alt>[^>\']*)\'[^>]*src=\'(?P<src>[^>\']*)\'[^>]*[/]?>',
+                              replace_img, richtext)
+            entry.text = richtext
 
         entry.save()
 
         if "pic" in story and story["pic"] != "":
             picture_url = "http://www.stadtgeschichte-coburg.de/" + story["pic"]
             # populate the MediaObject
-            media_object = Asset()
-            media_object.type = Asset.IMAGE
-            media_object.created = datetime.now()
-            media_object.modified = datetime.now()
-            media_object.alt = story["pic_text"] if "pic_text" in story else ""
-            media_object.save()
-            entry.assets.add(media_object)
-
-            # populate the MediaSource
-            media_source = MediaSource()
-            media_source.created = datetime.now()
-            media_source.modified = datetime.now()
-
-            media_source.asset = media_object
-
-            # get a correct upload path for the image
-            filename = media_source.get_upload_path("upload.jpg")
-            download_file = urllib2.urlopen(picture_url)
-
-            # create intermittent directories if not present
-            if not os.path.exists(os.path.dirname(settings.MEDIA_ROOT + filename)):
-                os.makedirs(os.path.dirname(settings.MEDIA_ROOT + filename))
-            # open local file
-            media_file = open(settings.MEDIA_ROOT + filename, "wb")
-            # download and save file at once (memory!)
-            media_file.write(download_file.read())
-            media_file.close()
-            media_source.file.name = filename
-            media_source.save()
+            download_image(entry, picture_url, story["pic_text"] if "pic_text" in story else "")
 
         else:
             entry.save()
