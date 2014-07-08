@@ -143,17 +143,19 @@ def download_image(entry, picture_url, alt=""):
     media_source.asset = media_object
     # get a correct upload path for the image
     filename = media_source.get_upload_path("upload.jpg")
-    download_file = urllib2.urlopen(picture_url)
-    # create intermittent directories if not present
-    if not os.path.exists(os.path.dirname(settings.MEDIA_ROOT + filename)):
-        os.makedirs(os.path.dirname(settings.MEDIA_ROOT + filename))
-    # open local file
-    media_file = open(settings.MEDIA_ROOT + filename, "wb")
-    # download and save file at once (memory!)
-    media_file.write(download_file.read())
-    media_file.close()
-    media_source.file.name = filename
-    media_source.save()
+    try:
+        download_file = urllib2.urlopen(picture_url)
+        # create intermittent directories if not present
+        if not os.path.exists(os.path.dirname(settings.MEDIA_ROOT + filename)):
+            os.makedirs(os.path.dirname(settings.MEDIA_ROOT + filename))
+        # open local file
+        media_file = open(settings.MEDIA_ROOT + filename, "wb")
+        # download and save file at once (memory!)
+        media_file.write(download_file.read())
+        media_file.close()
+    finally:
+        media_source.file.name = filename
+        media_source.save()
 
 
 def add_story(import_class, label, story, location_object=None):
