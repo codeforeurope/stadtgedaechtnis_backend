@@ -18,7 +18,7 @@ class Location(models.Model):
     """
     A Location with a geoposition
     """
-    label = models.CharField(max_length=150)
+    label = models.CharField(max_length=500)
     description = models.TextField(null=True, blank=True)
     latitude = models.DecimalField(decimal_places=15, max_digits=18)
     longitude = models.DecimalField(decimal_places=15, max_digits=18)
@@ -46,7 +46,7 @@ class Story(models.Model):
     One entry
     """
     categories = models.ManyToManyField(Category)
-    title = models.CharField(max_length=150)
+    title = models.CharField(max_length=500)
     abstract = models.TextField()
     text = models.TextField(null=True, blank=True)
     sources = models.TextField(null=True, blank=True)
@@ -103,7 +103,7 @@ class Asset(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
     categories = models.ManyToManyField(Category, null=True, blank=True)
     type = models.CharField(max_length=3, choices=MEDIA_TYPES, default=IMAGE)
-    alt = models.CharField(max_length=300)
+    alt = models.CharField(max_length=500)
     description = models.TextField(null=True, blank=True)
     width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
