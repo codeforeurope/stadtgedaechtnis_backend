@@ -6,6 +6,7 @@ import os
 import re
 from datetime import datetime
 from decimal import Decimal
+from urllib2 import HTTPError
 
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse, HttpResponseServerError
 from django.core.urlresolvers import reverse
@@ -153,6 +154,8 @@ def download_image(entry, picture_url, alt=""):
         # download and save file at once (memory!)
         media_file.write(download_file.read())
         media_file.close()
+    except HTTPError:
+        pass
     finally:
         media_source.file.name = filename
         media_source.save()
@@ -268,25 +271,34 @@ class SimpleJSONImport(ImportView):
 
             # find the story
             story = filter(lambda entry: entry["label"] == label, story_items)[0]
-            try:
-                location_object = Location.objects.get(latitude=lat, longitude=lon)
 
-                add_story(self, label, story, location_object)
+            # check if story already imported
+            if not Story.objects.filter(title=label).exists():
+                try:
+                    location_object = Location.objects.get(latitude=lat, longitude=lon)
 
-            except Location.DoesNotExist:
-                location["lat"] = str(lat)
-                location["lon"] = str(lon)
-                location["url"] = reverse('admin:stadtgedaechtnis_backend_location_add') + \
-                    "?latitude=" + str(lat) + "&longitude=" + str(lon)
-                location["near_locations"] = list()
-                location["nr"] = story["nr"]
-                for nearby_location in get_nearby_locations(lat, lon):
-                    near_location = dict()
-                    near_location["id"] = nearby_location.id
-                    near_location["label"] = nearby_location.__unicode__()
-                    location["near_locations"].append(near_location)
+                    add_story(self, label, story, location_object)
 
-                self.failed_entries.append(location)
+                except Location.DoesNotExist:
+                    location["lat"] = str(lat)
+                    location["lon"] = str(lon)
+                    location["url"] = reverse('admin:stadtgedaechtnis_backend_location_add') + \
+                        "?latitude=" + str(lat) + "&longitude=" + str(lon)
+                    location["near_locations"] = list()
+                    location["nr"] = story["nr"]
+                    for nearby_location in get_nearby_locations(lat, lon):
+                        near_location = dict()
+                        near_location["id"] = nearby_location.id
+                        near_location["label"] = nearby_location.__unicode__()
+                        location["near_locations"].append(near_location)
+
+                    self.failed_entries.append(location)
+            else:
+                saved_story = Story.objects.get(title=label)
+                entry = dict()
+                entry["title"] = label
+                entry["location"] = saved_story.location
+                self.exist_entries.append(entry)
 
             # remove located story from story_items
             story_items.remove(story)
