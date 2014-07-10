@@ -42,6 +42,7 @@ class Category(models.Model):
 
 
 class Story(models.Model):
+
     """
     One entry
     """
@@ -57,6 +58,9 @@ class Story(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
     location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True, related_name="stories")
     assets = models.ManyToManyField("Asset", related_name="assets")
+
+    class Meta:
+        ordering = ('time_start', 'time_end', 'title', )
 
     def __unicode__(self):
         return self.title + " (" + unicode(self.author) + ")"
