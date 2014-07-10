@@ -210,8 +210,6 @@ class JSONAllEntriesImporter(AddEntryMixIn):
     """
     Imports all entries from the given source.
     """
-    source = ""
-
     def __init__(self, source):
         # set source
         self.source = source
@@ -282,7 +280,6 @@ class JSONOneEntryImporter(AddEntryMixIn):
     """
     Class that imports one specific entry from the JSON source.
     """
-
     def __init__(self, source, item_id, location_id):
         self.source = source
         self.item_id = item_id
@@ -309,5 +306,22 @@ class JSONOneEntryImporter(AddEntryMixIn):
             raise ValueError("No location found for location_id %s" % self.location_id)
 
 
-def do_silent_json_import():
-    pass
+def do_silent_json_import(source):
+    """
+    Cronjob to import all the entries silently and save entries, that haven't been
+    imported to a log list. Also deletes log entries older than 7 days.
+    :param source:
+    :return:
+    """
+    importer = JSONAllEntriesImporter(source)
+    importer.do_import()
+
+    from stadtgedaechtnis_backend.models import ImportLogEntry
+    from datetime import timedelta
+
+    log_entry = ImportLogEntry()
+    log_entry.existed_entries = len(importer.exist_entries)
+    log_entry.failed_entries = len(importer.failed_entries)
+    log_entry.imported_entries = len(importer.success_entries)
+    log_entry.save()
+    ImportLogEntry.objects.filter(date_time__lte=datetime.now() - timedelta(days=7)).delete()

@@ -145,6 +145,15 @@ class MediaSource(models.Model):
         return mimetypes.guess_type(self.file.url)[0]
 
 
+class ImportLogEntry(models.Model):
+    """
+    One Import log entry.
+    """
+    date_time = models.DateTimeField(auto_now_add=True)
+    imported_entries = models.IntegerField()
+    existed_entries = models.IntegerField()
+    failed_entries = models.IntegerField()
+
 @receiver(post_delete, sender=MediaSource)
 def delete_file(sender, instance, **kwargs):
     if instance.file is not None:
