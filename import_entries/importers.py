@@ -252,7 +252,11 @@ class JSONAllEntriesImporter(AddEntryMixIn):
                         "?latitude=" + str(lat) + "&longitude=" + str(lon)
                     location["near_locations"] = list()
                     location["nr"] = story["nr"]
-                    for nearby_location in get_nearby_locations(lat, lon):
+                    search_lat = lat - Decimal(0.0007)
+                    search_lon = lon - Decimal(0.0007)
+                    search_max_lat = lat + Decimal(0.0007)
+                    search_max_lon = lon + Decimal(0.0007)
+                    for nearby_location in get_nearby_locations(search_lat, search_lon, search_max_lat, search_max_lon):
                         near_location = dict()
                         near_location["id"] = nearby_location.id
                         near_location["label"] = nearby_location.__unicode__()
