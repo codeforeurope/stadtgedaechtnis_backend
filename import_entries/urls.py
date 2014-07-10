@@ -11,15 +11,8 @@ _internal/data/json/dsg_coburg_fraunhofer_focus.js"
 
 urlpatterns = patterns('',
     url(r'^simple-json/$', admin.site.admin_view(SimpleJSONImport.as_view(
-            source=JSON_URL,
-            interactive=True,)),
+            source=JSON_URL,)),
         name="simple-json"),
-    url(r'^simple-json-silent/$', SimpleJSONImport.as_view(
-            source=JSON_URL,
-            interactive=False,
-            redirect=True,
-            redirect_to="/admin/"),
-        name="simple-json-silent"),
     url(r'^import-entry/(?P<id>\d+)/(?P<location>\d+)/$', ImportEntry.as_view(
             source=JSON_URL
         ),
