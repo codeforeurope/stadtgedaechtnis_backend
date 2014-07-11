@@ -41,6 +41,25 @@
 			</ul>
 
 		</div>
+	<div class="module" id="import-results-module">
+		<h2>{% trans 'Ergebnisse des automatischen Imports' %}</h2>
+		{% load import_log %}
+		{% get_import_log as importlog %}
+		{% if not importlog %}
+			<p>{% trans 'None available' %}</p>
+		{% else %}
+			<ul class="actionlist">
+			{% for entry in importlog %}
+				<li>
+				<span class="quiet"><strong>{{ entry.date_time }}</strong></span><br>
+				{% trans "Importierte Einträge" %}: {{ entry.imported_entries }}<br>
+				{% trans "Existierende Einträge" %}: {{ entry.existed_entries }}<br>
+				{% trans "Nicht importiere Einträge" %}: {{ entry.failed_entries }}
+				</li>
+			{% endfor %}
+			</ul>
+		{% endif %}
+	</div>
 	</div>
 
 {% endblock %}
