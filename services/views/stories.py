@@ -3,6 +3,7 @@ from django.db.models import Q
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView
 from stadtgedaechtnis_backend.services.views import GZIPAPIView
 from stadtgedaechtnis_backend.services.authentication.permissions import IsAuthenticatedOrReadOnlyOrModerated
+import operator
 
 __author__ = 'Jan'
 
@@ -60,12 +61,23 @@ class StoryTitleQuery(StoryList):
     Retrieves a story matching a given query
     """
     def get_queryset(self):
-        return Story.objects.filter(title__icontains=self.kwargs["query"])
+        # split the querystring
+        keywords = self.kwargs["query"].split(" ")
+        # AND the words together
+        filter_keywords = reduce(operator.and_, (Q(title__icontains=keyword) for keyword in keywords))
+        # filter queryset
+        return Story.objects.filter(filter_keywords)
 
 
 class StoryTextAndTitleQuery(StoryList):
     def get_queryset(self):
-        return Story.objects.filter(Q(text__icontains=self.kwargs["query"]) | Q(title__icontains=self.kwargs["query"]))
+        # split the querystring
+        keywords = self.kwargs["query"].split(" ")
+        # AND the words and OR the title and text queries together
+        filter_keywords = reduce(operator.and_, (Q(title__icontains=keyword) for keyword in keywords)) | \
+            reduce(operator.and_, (Q(text__icontains=keyword) for keyword in keywords))
+        # filter queryset
+        return Story.objects.filter(filter_keywords)
 
 
 class StoryTextQueryWithTitle(StoryTextAndTitleQuery, StoryListWithTitle):
