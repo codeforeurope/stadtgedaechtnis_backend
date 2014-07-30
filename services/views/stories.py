@@ -2,6 +2,7 @@ import operator
 
 from django.db.models import Q
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView
+from stadtgedaechtnis_backend.services.serializer.generics import MultipleRequestSerializerAPIView
 
 from stadtgedaechtnis_backend.services.serializer.serializers import *
 from stadtgedaechtnis_backend.services.views import GZIPAPIView
@@ -20,10 +21,14 @@ class StoryView(GZIPAPIView, GenericAPIView):
     permission_classes = (IsAuthenticatedOrReadOnlyOrModerated, )
 
 
-class StoryListCreate(StoryView, ListCreateAPIView):
+class StoryListCreate(StoryView, ListCreateAPIView, MultipleRequestSerializerAPIView):
     """
     View that lists or creates stories
     """
+    serializer_classes = {
+        "GET": StoryWithAssetSerializer,
+        "POST": StoryWithUniqueIDSerializer,
+    }
 
 
 class StoryList(StoryView, ListAPIView):

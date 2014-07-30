@@ -58,6 +58,7 @@ class Story(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
     location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True, related_name="stories")
     assets = models.ManyToManyField("Asset", related_name="assets")
+    temporary = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('time_start', 'time_end', 'title', )

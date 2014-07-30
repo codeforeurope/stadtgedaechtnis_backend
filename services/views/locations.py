@@ -71,7 +71,7 @@ class LocationListCreate(LocationView, ListCreateAPIView, MultipleRequestSeriali
     """
     serializer_classes = {
         "GET": LocationSerializer,
-        "POST": LocationSerializerWithUniqueID
+        "POST": LocationSerializerWithUniqueID,
     }
 
 

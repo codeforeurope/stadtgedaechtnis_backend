@@ -15,7 +15,7 @@ class LocationSerializer(serializers.ModelSerializer):
                   'created', 'modified', 'dbpedia_link')
 
 
-class LocationSerializerWithUniqueID(LocationSerializer):
+class LocationSerializerWithUniqueID(serializers.ModelSerializer):
     """
     Serializes a location with and adds a unique ID. Used for POST requests.
     """
@@ -35,8 +35,6 @@ class LocationSerializerWithStoryIDs(serializers.ModelSerializer):
         model = Location
         fields = ('id', 'label', 'description', 'latitude', 'longitude', 'altitude',
                   'created', 'modified', 'dbpedia_link', 'stories')
-
-
 
 
 class StoryTitleSerializer(serializers.ModelSerializer):
@@ -106,7 +104,20 @@ class StoryWithAssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Story
         fields = ('id', 'title', 'abstract', 'text', 'author',
-                  'time_start', 'time_end', 'created', 'modified', 'location', 'categories', 'assets')
+                  'time_start', 'time_end', 'created', 'modified', 'location', 'categories', 'assets', 'temporary')
+
+
+class StoryWithUniqueIDSerializer(serializers.ModelSerializer):
+    """
+    Serializes a story with a unique ID
+    """
+    class Meta:
+        model = Story
+        fields = ('id', 'title', 'abstract', 'text', 'author',
+                  'time_start', 'time_end', 'created', 'modified',
+                  'location', 'categories', 'assets', 'temporary', 'unique_id')
+
+    unique_id = UniqueIDField()
 
 
 class StoryWithAssetImageSerializer(StoryWithAssetSerializer):
