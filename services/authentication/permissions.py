@@ -3,6 +3,7 @@ __author__ = 'jpi'
 from rest_framework import permissions
 from django.conf import settings
 from rest_framework.permissions import SAFE_METHODS
+from stadtgedaechtnis_backend.services.serializer.fields import create_secret_signature
 
 
 class IsSameSessionAsLoggedIn(permissions.BasePermission):
@@ -30,7 +31,7 @@ class IsAuthenticatedOrModerated(permissions.IsAuthenticated):
     """
     Permission that checks the authentication mode.
     If user_authentication is active, the normal authentication
-    scheme will be used. Otherwise, the CRFT-mechanism is used.
+    scheme will be used. Otherwise, the CSRF-mechanism is used.
     """
     def has_permission(self, request, view):
         authentication_mode = getattr(settings, 'AUTHENTICATION_MODE', "user_authentication")
@@ -42,6 +43,13 @@ class IsAuthenticatedOrModerated(permissions.IsAuthenticated):
         else:
             return super(IsAuthenticatedOrModerated, self).has_permission(request, view)
 
+    def has_object_permission(self, request, view, obj):
+        try:
+            unique_id = request.DATA["unique_id"]
+            return create_secret_signature(obj) == unique_id
+        except KeyError:
+            return False
+
 
 class IsAuthenticatedOrReadOnlyOrModerated(IsAuthenticatedOrModerated):
     """
@@ -50,4 +58,8 @@ class IsAuthenticatedOrReadOnlyOrModerated(IsAuthenticatedOrModerated):
     """
     def has_permission(self, request, view):
         return request.method in SAFE_METHODS or \
-               super(IsAuthenticatedOrReadOnlyOrModerated, self).has_permission(request, view)
+            super(IsAuthenticatedOrReadOnlyOrModerated, self).has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        return request.method in SAFE_METHODS or \
+            super(IsAuthenticatedOrReadOnlyOrModerated, self).has_object_permission(request, view, obj)

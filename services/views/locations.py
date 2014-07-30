@@ -6,9 +6,11 @@ from django.views.generic import View
 from django.http import HttpResponse
 from SPARQLWrapper import SPARQLWrapper, JSON
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+
 from stadtgedaechtnis_backend.utils import get_nearby_locations
 from stadtgedaechtnis_backend.services.views import GZIPAPIView
-from stadtgedaechtnis_backend.serializers import *
+from stadtgedaechtnis_backend.services.serializer.serializers import *
+from stadtgedaechtnis_backend.services.serializer.generics import MultipleRequestSerializerAPIView
 from stadtgedaechtnis_backend.services.authentication.permissions import IsAuthenticatedOrReadOnlyOrModerated
 
 
@@ -63,10 +65,14 @@ class LocationView(GZIPAPIView, GenericAPIView):
     permission_classes = (IsAuthenticatedOrReadOnlyOrModerated, )
 
 
-class LocationListCreate(LocationView, ListCreateAPIView):
+class LocationListCreate(LocationView, ListCreateAPIView, MultipleRequestSerializerAPIView):
     """
     List all locations or create a new one
     """
+    serializer_classes = {
+        "GET": LocationSerializer,
+        "POST": LocationSerializerWithUniqueID
+    }
 
 
 class LocationList(LocationView, ListAPIView):
@@ -131,7 +137,7 @@ class LocationListNearby(LocationList):
     def get_queryset(self):
         return get_nearby_locations(self.kwargs["lat"], self.kwargs["lon"],
                                     self.kwargs["maxlat"] if "maxlat" in self.kwargs else 0,
-                                    self.kwargs["maxlon"] if "maxlon" in self.kwargs else 0)
+                                    self.kwargs["maxlon"] if "maxlon" in self.kwargs else 0, True)
 
 
 class LocationListNearbyWithStoryIDs(LocationListNearby, LocationListWithStoryIDs):

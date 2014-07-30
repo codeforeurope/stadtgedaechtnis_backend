@@ -2,14 +2,15 @@ __author__ = 'jpi'
 
 from rest_framework.generics import GenericAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.views import APIView
-from stadtgedaechtnis_backend.serializers import *
-from stadtgedaechtnis_backend.services.authentication.permissions import \
-    IsSameUserAsLoggedIn, IsSameSessionAsLoggedIn, IsAuthenticatedOrModerated
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework import status
 from rest_framework.response import Response
 from django.contrib.auth import login, get_user_model
 from django.http.response import HttpResponseBadRequest, HttpResponseForbidden
+
+from stadtgedaechtnis_backend.services.serializer.serializers import *
+from stadtgedaechtnis_backend.services.authentication.permissions import \
+    IsSameUserAsLoggedIn, IsSameSessionAsLoggedIn, IsAuthenticatedOrModerated
 
 
 class UserView(GenericAPIView):

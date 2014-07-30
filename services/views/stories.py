@@ -1,9 +1,12 @@
-from stadtgedaechtnis_backend.serializers import *
+import operator
+
 from django.db.models import Q
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView
+
+from stadtgedaechtnis_backend.services.serializer.serializers import *
 from stadtgedaechtnis_backend.services.views import GZIPAPIView
 from stadtgedaechtnis_backend.services.authentication.permissions import IsAuthenticatedOrReadOnlyOrModerated
-import operator
+
 
 __author__ = 'Jan'
 
