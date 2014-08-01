@@ -12,4 +12,5 @@ urlpatterns = patterns('',
     url(r'stories/', include("stadtgedaechtnis_backend.services.urlpatterns.stories")),
     url(r'users/', include("stadtgedaechtnis_backend.services.urlpatterns.users")),
     url(r'sessions/', include("stadtgedaechtnis_backend.services.urlpatterns.sessions")),
+    url(r'assets/', include("stadtgedaechtnis_backend.services.urlpatterns.assets")),
     )

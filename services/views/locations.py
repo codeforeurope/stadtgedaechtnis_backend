@@ -106,7 +106,6 @@ class SingleLocation(LocationView, RetrieveUpdateDestroyAPIView):
     """
     Gets a single Location.
     """
-    permission_classes = (IsAuthenticatedOrReadOnlyOrModerated, )
 
 
 class SingleLocationWithStoryIDs(SingleLocation, LocationListWithStoryIDs):

@@ -2,7 +2,7 @@ __author__ = 'jpi'
 
 import hashlib
 
-from rest_framework.fields import Field
+from rest_framework.fields import Field, BooleanField
 from django.conf import settings
 
 
@@ -14,6 +14,15 @@ class UniqueIDField(Field):
 
     def field_to_native(self, obj, field_name):
         return create_secret_signature(obj)
+
+
+class IgnoreValueBooleanField(BooleanField):
+    """
+    Field that ignores the actual value and sets it to a default value
+    """
+
+    def from_native(self, value):
+        return self.default
 
 
 def create_secret_signature(obj):

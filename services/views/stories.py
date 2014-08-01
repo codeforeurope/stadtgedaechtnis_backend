@@ -1,7 +1,8 @@
 import operator
 
 from django.db.models import Q
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView, \
+    RetrieveUpdateDestroyAPIView, CreateAPIView
 from stadtgedaechtnis_backend.services.serializer.generics import MultipleRequestSerializerAPIView
 
 from stadtgedaechtnis_backend.services.serializer.serializers import *
@@ -44,20 +45,20 @@ class StoryListWithTitle(StoryList):
     serializer_class = StoryTitleSerializer
 
 
-class SingleLocation(StoryView, RetrieveAPIView):
+class SingleStory(StoryView, RetrieveAPIView):
     """
     Gets a single Location.
     """
 
 
-class StoryWithAssets(SingleLocation):
+class StoryWithAssets(SingleStory, RetrieveUpdateDestroyAPIView):
     """
     Retrieves one particular story and their asset IDs
     """
     serializer_class = StoryWithAssetSerializer
 
 
-class StoryWithAssetImage(SingleLocation):
+class StoryWithAssetImage(SingleStory):
     """
     Retrieves one particular story and their assets plus first URL.
     """
@@ -74,7 +75,7 @@ class StoryTitleQuery(StoryList):
         # AND the words together
         filter_keywords = reduce(operator.and_, (Q(title__icontains=keyword) for keyword in keywords))
         # filter queryset
-        return Story.objects.filter(filter_keywords)
+        return Story.objects.filter(filter_keywords, temporary=False)
 
 
 class StoryTextAndTitleQuery(StoryList):
@@ -85,7 +86,7 @@ class StoryTextAndTitleQuery(StoryList):
         filter_keywords = reduce(operator.and_, (Q(title__icontains=keyword) for keyword in keywords)) | \
             reduce(operator.and_, (Q(text__icontains=keyword) for keyword in keywords))
         # filter queryset
-        return Story.objects.filter(filter_keywords)
+        return Story.objects.filter(filter_keywords, temporary=False)
 
 
 class StoryTextQueryWithTitle(StoryTextAndTitleQuery, StoryListWithTitle):
