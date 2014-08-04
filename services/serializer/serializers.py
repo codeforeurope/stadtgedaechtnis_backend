@@ -161,6 +161,18 @@ class AssetWithSourcesSerializer(serializers.ModelSerializer):
     sources = AssetSourceSerializer(many=True)
 
 
+class AssetWithUniqueIDSerializer(serializers.ModelSerializer):
+    """
+    Serializes an asset with a unique ID
+    """
+    class Meta:
+        model = Asset
+        fields = ('id', 'type', 'created', 'modified', 'alt', 'description', 'width',
+                  'height', 'resolution', 'device', 'length', 'is_readable', 'unique_id')
+
+    unique_id = UniqueIDField()
+
+
 class StoryWithAssetImageSerializer(StoryWithAssetSerializer):
     """
     Serializes a story completely using AssetURLSerializer for its assets
