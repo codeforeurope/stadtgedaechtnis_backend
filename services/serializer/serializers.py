@@ -156,7 +156,7 @@ class AssetWithSourcesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asset
         fields = ('id', 'type', 'created', 'modified', 'alt', 'description', 'width',
-                  'height', 'resolution', 'device', 'length', 'is_readable', 'sources')
+                  'height', 'resolution', 'device', 'length', 'is_readable', 'sources', 'stories')
 
     sources = AssetSourceSerializer(many=True)
 

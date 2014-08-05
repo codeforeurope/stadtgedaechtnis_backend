@@ -4,14 +4,15 @@ Created on 26.02.2014
 @author: jpi
 """
 
+import os.path
+import mimetypes
+
 from django.utils.translation import ugettext as _
 from django.db import models
 from django.db.models.signals import post_delete
 from django.conf import settings
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-import os.path
-import mimetypes
 
 
 class Location(models.Model):
@@ -113,7 +114,7 @@ class Asset(models.Model):
     width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
     resolution = models.IntegerField(null=True, blank=True)
-    device = models.CharField(max_length=300)
+    device = models.CharField(max_length=300, null=True, blank=True)
     length = models.IntegerField(null=True, blank=True)
     is_readable = models.BooleanField(default=False)
     stories = models.ManyToManyField(Story, related_name="stories", through=Story.assets.through)
@@ -158,7 +159,10 @@ class ImportLogEntry(models.Model):
 @receiver(post_delete, sender=MediaSource)
 def delete_file(sender, instance, **kwargs):
     if instance.file is not None:
+        file_dir = os.path.dirname(instance.file.path)
         instance.file.delete(False)
+        if os.path.isdir(file_dir) and not (os.listdir(file_dir)):
+            os.rmdir(file_dir)
 
 
 def find_user_by_name(query_name):
