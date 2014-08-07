@@ -42,7 +42,10 @@ class UserSearchView(UserView, ListAPIView):
     """
     def get_queryset(self):
         query = self.kwargs["query"]
-        return find_user_by_name(query)
+        try:
+            return find_user_by_name(query)
+        except get_user_model().DoesNotExist:
+            return get_user_model().objects.none()
 
 
 class CreateSessionView(ObtainAuthToken):
