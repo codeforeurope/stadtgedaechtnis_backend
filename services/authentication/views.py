@@ -1,6 +1,8 @@
+from stadtgedaechtnis_backend.services.views import GZIPAPIView
+
 __author__ = 'jpi'
 
-from rest_framework.generics import GenericAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.generics import GenericAPIView, CreateAPIView, UpdateAPIView, ListAPIView
 from rest_framework.views import APIView
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework import status
@@ -13,7 +15,7 @@ from stadtgedaechtnis_backend.services.authentication.permissions import \
     IsSameUserAsLoggedIn, IsSameSessionAsLoggedIn, IsAuthenticatedOrModerated
 
 
-class UserView(GenericAPIView):
+class UserView(GZIPAPIView, GenericAPIView):
     """
     Class that handles user creation and updating.
     """
@@ -32,6 +34,15 @@ class UserUpdateView(UserView, UpdateAPIView):
     View that updates a user
     """
     permission_classes = (IsSameUserAsLoggedIn, IsAuthenticatedOrModerated, )
+
+
+class UserSearchView(UserView, ListAPIView):
+    """
+    View that searches for a particular user
+    """
+    def get_queryset(self):
+        query = self.kwargs["query"]
+        return find_user_by_name(query)
 
 
 class CreateSessionView(ObtainAuthToken):

@@ -197,7 +197,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     Serializes a user with an absolute URL.
     """
     class Meta:
-        model = settings.AUTH_USER_MODEL
+        model = get_user_model()
         fields = ('url', 'id', 'username', 'first_name', 'last_name', 'password', 'email')
 
     class PasswordField(serializers.CharField):
