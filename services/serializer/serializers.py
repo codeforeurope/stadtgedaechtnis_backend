@@ -158,7 +158,7 @@ class AssetWithSourcesSerializer(serializers.ModelSerializer):
         fields = ('id', 'type', 'created', 'modified', 'alt', 'description', 'width',
                   'height', 'resolution', 'device', 'length', 'is_readable', 'sources', 'stories')
 
-    sources = AssetSourceSerializer(many=True)
+    sources = AssetSourceSerializer(many=True, required=False)
 
 
 class AssetWithUniqueIDSerializer(serializers.ModelSerializer):
