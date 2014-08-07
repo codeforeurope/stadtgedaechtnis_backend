@@ -108,6 +108,8 @@ class StoryWithAssetSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'abstract', 'text', 'author',
                   'time_start', 'time_end', 'created', 'modified', 'location', 'categories', 'assets', 'temporary')
 
+    temporary = IgnoreValueBooleanField(default=True)
+
 
 class StoryWithUniqueIDSerializer(serializers.ModelSerializer):
     """
@@ -117,7 +119,7 @@ class StoryWithUniqueIDSerializer(serializers.ModelSerializer):
         model = Story
         fields = ('id', 'title', 'abstract', 'text', 'author',
                   'time_start', 'time_end', 'created', 'modified',
-                  'location', 'categories', 'assets', 'temporary', 'unique_id')
+                  'location', 'categories', 'assets', 'temporary', 'unique_id', 'stories')
 
     temporary = IgnoreValueBooleanField(default=True)
     unique_id = UniqueIDField()

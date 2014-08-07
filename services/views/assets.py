@@ -64,11 +64,15 @@ class AssetWithSources(AssetView, CreateAPIView, RetrieveAPIView, MultipleReques
             obj.stories.add(story)
 
 
-class SingleAsset(AssetView, RetrieveUpdateDestroyAPIView):
+class SingleAsset(AssetView, RetrieveUpdateDestroyAPIView, MultipleRequestSerializerAPIView):
     """
     Retrieves a single Asset
     """
-    serializer_class = AssetWithSourcesSerializer
+    serializer_classes = {
+        "GET": AssetWithSourcesSerializer,
+        "DELETE": AssetWithSourcesSerializer,
+        "PUT": AssetWithUniqueIDSerializer
+    }
 
     def retrieve(self, request, *args, **kwargs):
         pass

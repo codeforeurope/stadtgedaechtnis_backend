@@ -51,11 +51,15 @@ class SingleStory(StoryView, RetrieveAPIView):
     """
 
 
-class StoryWithAssets(SingleStory, RetrieveUpdateDestroyAPIView):
+class StoryWithAssets(SingleStory, RetrieveUpdateDestroyAPIView, MultipleRequestSerializerAPIView):
     """
     Retrieves one particular story and their asset IDs
     """
-    serializer_class = StoryWithAssetSerializer
+    serializer_classes = {
+        "GET": StoryWithAssetSerializer,
+        "PUT": StoryWithUniqueIDSerializer,
+        "DELETE": StoryWithAssetSerializer
+    }
 
 
 class StoryWithAssetImage(SingleStory):
