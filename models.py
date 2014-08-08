@@ -3,6 +3,8 @@ Created on 26.02.2014
 
 @author: jpi
 """
+from decimal import Decimal, ROUND_DOWN
+import decimal
 
 import os.path
 import mimetypes
@@ -29,7 +31,10 @@ class Location(models.Model):
     dbpedia_link = models.CharField(max_length=500, null=True, blank=True)
 
     def __unicode__(self):
-        return self.label + " [" + str(self.latitude) + ", " + str(self.longitude) + "]"
+        lat = str(self.latitude.quantize(Decimal('.0000000000001'), rounding=ROUND_DOWN))
+        lon = str(self.longitude.quantize(Decimal('.0000000000001'), rounding=ROUND_DOWN))
+
+        return self.label + " [" + lat + ", " + lon + "]"
 
 
 class Category(models.Model):
