@@ -1,8 +1,7 @@
-from rest_framework.fields import BooleanField
-
 __author__ = 'jpi'
 
 from rest_framework import serializers
+
 from stadtgedaechtnis_backend.services.serializer.fields import UniqueIDField, IgnoreValueBooleanField
 from stadtgedaechtnis_backend.models import *
 
@@ -105,7 +104,7 @@ class StoryWithAssetSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Story
-        fields = ('id', 'title', 'abstract', 'text', 'author',
+        fields = ('id', 'title', 'abstract', 'text', 'author', 'sources',
                   'time_start', 'time_end', 'created', 'modified', 'location', 'categories', 'assets', 'temporary')
 
     temporary = IgnoreValueBooleanField(default=True)
@@ -118,7 +117,7 @@ class StoryWithUniqueIDSerializer(serializers.ModelSerializer):
     class Meta:
         model = Story
         fields = ('id', 'title', 'abstract', 'text', 'author',
-                  'time_start', 'time_end', 'created', 'modified',
+                  'time_start', 'time_end', 'created', 'modified', 'sources',
                   'location', 'categories', 'assets', 'temporary', 'unique_id', 'stories')
 
     temporary = IgnoreValueBooleanField(default=True)
