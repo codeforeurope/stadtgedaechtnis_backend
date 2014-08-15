@@ -52,7 +52,7 @@ class Story(models.Model):
     """
     One entry
     """
-    categories = models.ManyToManyField(Category)
+    categories = models.ManyToManyField(Category, blank=True)
     title = models.CharField(max_length=500)
     abstract = models.TextField()
     text = models.TextField(null=True, blank=True)
@@ -63,7 +63,7 @@ class Story(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
     location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True, related_name="stories")
-    assets = models.ManyToManyField("Asset", related_name="assets")
+    assets = models.ManyToManyField("Asset", related_name="assets", blank=True)
     temporary = models.BooleanField(default=False)
 
     class Meta:
@@ -122,7 +122,7 @@ class Asset(models.Model):
     device = models.CharField(max_length=300, null=True, blank=True)
     length = models.IntegerField(null=True, blank=True)
     is_readable = models.BooleanField(default=False)
-    stories = models.ManyToManyField(Story, related_name="stories", through=Story.assets.through)
+    stories = models.ManyToManyField(Story, related_name="stories", through=Story.assets.through, blank=True)
     location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True)
 
     def __unicode__(self):
