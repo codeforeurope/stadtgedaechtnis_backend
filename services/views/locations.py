@@ -152,11 +152,12 @@ class LocationListNearbyWithImages(LocationListNearby):
     serializer_class = LocationSerializerWithStoryImages
 
 
-class SingleLocationWithStoriesImage(SingleLocation, LocationListNearbyWithImages):
+class SingleLocationWithStoriesImage(SingleLocation):
     """
-    Retrieves a single location by ids ID.
+    Retrieves a single location by its ID.
     also includes al ist of attached stories and images.
     """
+    serializer_class = LocationSerializerWithStoryImages
 
 
 class LocationListNearbyWithStoryTitle(LocationListWithStoryTitle, LocationListNearby):
