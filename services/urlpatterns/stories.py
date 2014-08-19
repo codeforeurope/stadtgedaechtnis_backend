@@ -12,6 +12,7 @@ urlpatterns = patterns(
     url(r'^(?P<pk>\d+)/$', StoryWithAssets.as_view(), name="get-story"),
     url(r'^(?P<pk>\d+)/image/$', StoryWithAssetImage.as_view(), name="get-story-image"),
     url(r'^(?P<pk>\d+)/assets/$', AssetWithSources.as_view(), name="get-story-with-asset"),
+    url(r'^(?P<pk>\d+)/email/$', StoryEmailView.as_view(), name="entry-send-mail"),
     url(r'^title/(?P<query>[^/]+)/title/$', StoryQueryWithTitle.as_view(), name="query-story-title"),
     url(r'^text/(?P<query>[^/]+)/title/$', StoryTextQueryWithTitle.as_view(), name="query-story-text"),
     url(r'^title/(?P<query>[^/]+)/$', StoryTitleQuery.as_view(), name="query-story-title-list"),
