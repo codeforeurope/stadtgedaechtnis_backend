@@ -60,6 +60,14 @@
 			</ul>
 		{% endif %}
 	</div>
+
+    <div class="module" id="new-entries-module">
+        <h2>{% trans "Zur Überprüfung eingesendete Einträge" %}</h2>
+        {% load new_entries %}
+        {% get_new_entries_count as new_entries %}
+        <p>{% trans "Einträge" %}: {{ new_entries }}<br>
+        <a href="{% url 'admin:stadtgedaechtnis_backend_newstory_changelist' %}">{% trans "Einträge überprüfen" %}</a></p>
+    </div>
 	</div>
 
 {% endblock %}

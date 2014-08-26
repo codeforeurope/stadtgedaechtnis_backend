@@ -37,7 +37,7 @@ def get_nearby_locations(lat, lon, max_lat=0, max_lon=0, stories_only=False):
                                             latitude__lte=max_lat,
                                             longitude__gte=min_lon,
                                             longitude__lte=max_lon,
-                                            stories__isnull=False, stories__temporary=False).distinct()
+                                            stories__isnull=False, stories__temporary__exact=False).distinct()
     else:
         locations = Location.objects.filter(latitude__gte=min_lat,
                                             latitude__lte=max_lat,

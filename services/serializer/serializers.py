@@ -1,3 +1,5 @@
+from rest_framework.relations import PrimaryKeyRelatedField
+
 __author__ = 'jpi'
 
 from rest_framework import serializers
@@ -96,6 +98,21 @@ class LocationSerializerWithStoryImages(LocationSerializerWithStoryTitle):
     Serializes a Location and the attached stories using the StoryImageSerializer
     """
     stories = StoryImageSerializer(many=True)
+
+    def get_related_field(self, model_field, related_model, to_many):
+        """
+        Custom related field method for not including temporary stories
+        """
+
+        kwargs = {
+            'queryset': related_model._default_manager.filter(temporary=False),
+            'many': to_many
+        }
+
+        if model_field:
+            kwargs['required'] = not(model_field.null or model_field.blank)
+
+        return PrimaryKeyRelatedField(**kwargs)
 
 
 class StoryWithAssetSerializer(serializers.ModelSerializer):
