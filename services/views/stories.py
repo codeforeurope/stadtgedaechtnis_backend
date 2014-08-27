@@ -1,6 +1,10 @@
 import operator
+from django.core.exceptions import ImproperlyConfigured
+from django.core.mail import EmailMultiAlternatives
 
 from django.db.models import Q
+from django.http import HttpResponseServerError
+from django.utils.translation import ugettext as _
 from django.views.generic.detail import SingleObjectTemplateResponseMixin, BaseDetailView
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView, \
     RetrieveUpdateDestroyAPIView
@@ -10,6 +14,7 @@ from stadtgedaechtnis_backend.services.serializer.generics import MultipleReques
 from stadtgedaechtnis_backend.services.serializer.serializers import *
 from stadtgedaechtnis_backend.services.views import GZIPAPIView
 from stadtgedaechtnis_backend.services.authentication.permissions import IsAuthenticatedOrReadOnlyOrModerated, IsAuthenticatedOrModerated
+from stadtgedaechtnis_backend.utils import replace_multiple
 
 
 __author__ = 'Jan'
@@ -24,7 +29,7 @@ class StoryView(GZIPAPIView, GenericAPIView):
     permission_classes = (IsAuthenticatedOrReadOnlyOrModerated, )
 
 
-class StoryEmailView(SingleObjectTemplateResponseMixin, BaseDetailView, StoryView):
+class StoryEmailView(StoryView, SingleObjectTemplateResponseMixin, BaseDetailView):
     """
     Sends an email for this object
     Needs the unique_id parameter present in order to work
@@ -35,16 +40,41 @@ class StoryEmailView(SingleObjectTemplateResponseMixin, BaseDetailView, StoryVie
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        # TODO: send_mail(self.object)
-        serializer = self.get_serializer(self.object)
-        return Response(serializer.data)
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
         context = self.get_context_data(object=self.object)
         template_response = self.render_to_response(context)
         email_content = template_response.rendered_content
-        # send_mail(email_content)
+        if self.send_mail(email_content):
+            serializer = self.get_serializer(self.object)
+            return Response(serializer.data)
+        else:
+            return HttpResponseServerError()
+
+    @classmethod
+    def send_mail(cls, html_content):
+        """
+        Sends an email with html content to the recipient specified in local_settings.py
+        """
+        recipient = settings.NEW_ENTRY_EMAIL_RECIPIENT
+        if not recipient:
+            raise ImproperlyConfigured("You must specify an e-mail recipient via the "
+                                       "setting NEW_ENTRY_EMAIL_RECIPIENT in your local_settings.py")
+
+        sender = settings.NEW_ENTRY_EMAIL_SENDER
+        if not sender:
+            raise ImproperlyConfigured("You must specify an e-mail sender via the "
+                                       "setting NEW_ENTRY_EMAIL_SENDER in your local_settings.py")
+
+        plain_content = replace_multiple(html_content, {
+            "<br>": "\n",
+            "<hr>": "",
+            "<b>": "",
+            "</b>": "",
+        })
+
+        subject = _("Neuer Eintrag")
+        email = EmailMultiAlternatives(subject, plain_content, sender, [recipient])
+        email.attach_alternative(html_content, "text/html")
+        return email.send()
 
 
 class StoryListCreate(StoryView, ListCreateAPIView, MultipleRequestSerializerAPIView):
