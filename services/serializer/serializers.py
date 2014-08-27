@@ -88,7 +88,7 @@ class StoryImageSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Story
-        fields = ('id', 'title', 'abstract', 'assets')
+        fields = ('id', 'title', 'abstract', 'assets', 'temporary')
 
     assets = AssetURLSerializer(many=False)
 
