@@ -1,4 +1,9 @@
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Page
+from django.db.models import Q
+from rest_framework.fields import get_component, is_simple_callable
 from rest_framework.relations import PrimaryKeyRelatedField
+import six
 
 __author__ = 'jpi'
 
@@ -6,6 +11,54 @@ from rest_framework import serializers
 
 from stadtgedaechtnis_backend.services.serializer.fields import UniqueIDField, IgnoreValueBooleanField
 from stadtgedaechtnis_backend.models import *
+
+
+class FilterSerializer(serializers.ModelSerializer):
+    """
+    Overrides the field_to_native method to implement filtering a related field.
+    """
+
+    def get_related_filter(self):
+        pass
+
+    def field_to_native(self, obj, field_name):
+        """
+        Override default so that the serializer can be used as a nested field
+        across relationships.
+        """
+        if self.write_only:
+            return None
+
+        if self.source == '*':
+            return self.to_native(obj)
+
+            # Get the raw field value
+        try:
+            source = self.source or field_name
+            value = obj
+
+            for component in source.split('.'):
+                if value is None:
+                    break
+                value = get_component(value, component)
+        except ObjectDoesNotExist:
+            return None
+
+        if is_simple_callable(getattr(value, 'all', None)):
+            filtered_queryset = value.all().filter(self.get_related_filter())
+            return [self.to_native(item) for item in filtered_queryset]
+
+        if value is None:
+            return None
+
+        if self.many is not None:
+            many = self.many
+        else:
+            many = hasattr(value, '__iter__') and not isinstance(value, (Page, dict, six.text_type))
+
+        if many:
+            return [self.to_native(item) for item in value]
+        return self.to_native(value)
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -82,13 +135,17 @@ class AssetURLSerializer(serializers.ModelSerializer):
     sources = AssetFirstSourceField()
 
 
-class StoryImageSerializer(serializers.ModelSerializer):
+class StoryImageSerializer(FilterSerializer):
     """
-    Serializes a story with only title and abstract and all the assets belonging to this story using the AssetURLSerializer
+    Serializes a story with only title and abstract and all the assets
+    belonging to this story using the AssetURLSerializer
     """
     class Meta:
         model = Story
-        fields = ('id', 'title', 'abstract', 'assets', 'temporary')
+        fields = ('id', 'title', 'abstract', 'assets')
+
+    def get_related_filter(self):
+        return Q(temporary=False)
 
     assets = AssetURLSerializer(many=False)
 
@@ -98,21 +155,6 @@ class LocationSerializerWithStoryImages(LocationSerializerWithStoryTitle):
     Serializes a Location and the attached stories using the StoryImageSerializer
     """
     stories = StoryImageSerializer(many=True)
-
-    def get_related_field(self, model_field, related_model, to_many):
-        """
-        Custom related field method for not including temporary stories
-        """
-
-        kwargs = {
-            'queryset': related_model._default_manager.filter(temporary=False),
-            'many': to_many
-        }
-
-        if model_field:
-            kwargs['required'] = not(model_field.null or model_field.blank)
-
-        return PrimaryKeyRelatedField(**kwargs)
 
 
 class StoryWithAssetSerializer(serializers.ModelSerializer):

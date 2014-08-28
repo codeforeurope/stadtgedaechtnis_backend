@@ -94,9 +94,6 @@ class Story(models.Model):
         return result
 
 
-
-
-
 class Asset(models.Model):
     """
     Media Object to save images, videos or audio files that belong to an entry,
