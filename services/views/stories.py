@@ -2,9 +2,7 @@ import operator
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMultiAlternatives
 
-from django.db.models import Q
 from django.http import HttpResponseServerError
-from django.utils.translation import ugettext as _
 from django.views.generic.detail import SingleObjectTemplateResponseMixin, BaseDetailView
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView, \
     RetrieveUpdateDestroyAPIView
@@ -13,8 +11,10 @@ from rest_framework.response import Response
 from stadtgedaechtnis_backend.services.serializer.generics import MultipleRequestSerializerAPIView
 from stadtgedaechtnis_backend.services.serializer.serializers import *
 from stadtgedaechtnis_backend.services.views import GZIPAPIView
-from stadtgedaechtnis_backend.services.authentication.permissions import IsAuthenticatedOrReadOnlyOrModerated, IsAuthenticatedOrModerated
+from stadtgedaechtnis_backend.services.authentication.permissions import IsAuthenticatedOrReadOnlyOrModerated, \
+    IsAuthenticatedOrModerated
 from stadtgedaechtnis_backend.utils import replace_multiple
+from django.utils.translation import ugettext_lazy as _
 
 
 __author__ = 'Jan'
@@ -41,6 +41,9 @@ class StoryEmailView(StoryView, SingleObjectTemplateResponseMixin, BaseDetailVie
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(object=self.object)
+        if not kwargs["email"]:
+            return HttpResponseServerError()
+        context.update({"authorEmail": kwargs["email"]})
         template_response = self.render_to_response(context)
         email_content = template_response.rendered_content
         if self.send_mail(email_content):
