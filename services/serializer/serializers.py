@@ -130,7 +130,7 @@ class AssetURLSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Asset
-        fields = ('alt', 'sources')
+        fields = ('alt', 'sources', 'type')
 
     sources = AssetFirstSourceField()
 
