@@ -71,17 +71,6 @@ class Story(models.Model):
     def __unicode__(self):
         return self.title + " (" + unicode(self.author) + ")"
 
-    def get_additional_images(self):
-        """
-        Returns a list of additional images for this entry
-        """
-        result = list()
-        for index, asset in enumerate(self.assets.all()):
-            if index > 0 and asset.type == Asset.IMAGE:
-                result.append(asset)
-
-        return result
-
     def get_additional_media(self):
         """
         Returns a list of additional media for this entry (no images)
