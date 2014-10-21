@@ -44,7 +44,8 @@ class StoryEmailView(StoryView, SingleObjectTemplateResponseMixin, BaseDetailVie
         context = self.get_context_data(object=self.object)
         if not kwargs["email"]:
             return HttpResponseServerError()
-        admin_url = request.build_absolute_uri(urlresolvers.reverse("admin:stadtgedaechtnis_backend_story_change", args=(self.object.id,)))
+        admin_url = request.build_absolute_uri(urlresolvers.reverse("admin:stadtgedaechtnis_backend_story_change",
+                                                                    args=(self.object.id,)))
         context.update({"authorEmail": kwargs["email"],
                         "adminLink": admin_url})
         template_response = self.render_to_response(context)
@@ -97,6 +98,7 @@ class StoryList(StoryView, ListAPIView):
     """
     Simply lists all stories
     """
+    queryset=Story.objects.filter(temporary=False)
 
 
 class StoryListWithTitle(StoryList):
@@ -140,7 +142,7 @@ class StoryTitleQuery(StoryList):
         # AND the words together
         filter_keywords = reduce(operator.and_, (Q(title__icontains=keyword) for keyword in keywords))
         # filter queryset
-        return Story.objects.filter(filter_keywords, temporary=False)
+        return Story.objects.filter(operator.and_(filter_keywords, Q(temporary=False)))
 
 
 class StoryTextAndTitleQuery(StoryList):
@@ -151,7 +153,7 @@ class StoryTextAndTitleQuery(StoryList):
         filter_keywords = reduce(operator.and_, (Q(title__icontains=keyword) for keyword in keywords)) | \
             reduce(operator.and_, (Q(text__icontains=keyword) for keyword in keywords))
         # filter queryset
-        return Story.objects.filter(filter_keywords, temporary=False)
+        return Story.objects.filter(operator.and_(filter_keywords, Q(temporary=False)))
 
 
 class StoryTextQueryWithTitle(StoryTextAndTitleQuery, StoryListWithTitle):
