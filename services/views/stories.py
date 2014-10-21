@@ -1,4 +1,5 @@
 import operator
+from django.core import urlresolvers
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMultiAlternatives
 
@@ -43,7 +44,9 @@ class StoryEmailView(StoryView, SingleObjectTemplateResponseMixin, BaseDetailVie
         context = self.get_context_data(object=self.object)
         if not kwargs["email"]:
             return HttpResponseServerError()
-        context.update({"authorEmail": kwargs["email"]})
+        admin_url = request.build_absolute_uri(urlresolvers.reverse("admin:stadtgedaechtnis_backend_story_change", args=(self.object.id,)))
+        context.update({"authorEmail": kwargs["email"],
+                        "adminLink": admin_url})
         template_response = self.render_to_response(context)
         email_content = template_response.rendered_content
         if self.send_mail(email_content):
