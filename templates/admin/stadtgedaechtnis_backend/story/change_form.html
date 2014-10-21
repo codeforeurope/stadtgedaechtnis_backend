@@ -1,0 +1,24 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls admin_static admin_modify %}
+
+{% block extrahead %}{{block.super}}
+<style type="text/css">
+div#content div#content-main {
+	width: 45%;
+	overflow: auto;
+}
+
+div#content div#content-right {
+	overflow: auto;
+	float: left;
+}
+</style>
+{% endblock %}
+
+{% block content %}{{ block.super }}
+<div id="content-right">
+	<h2>{% trans "Vorschau des Beitrags" %}</h2>
+	<iframe src="{% url 'stadtgedaechtnis_frontend:entry-view-preview' original.pk %}" style="border: none; width: 380px; height: 800px"></iframe>
+</div>
+{% endblock %}
+
