@@ -10,7 +10,7 @@ import mimetypes
 
 from django.utils.translation import ugettext as _
 from django.db import models
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, pre_delete
 from django.conf import settings
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
@@ -44,6 +44,9 @@ class Category(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
     name = models.CharField(max_length=150)
     description = models.TextField(null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Story(models.Model):
@@ -111,10 +114,18 @@ class Asset(models.Model):
     length = models.IntegerField(null=True, blank=True)
     is_readable = models.BooleanField(default=False)
     stories = models.ManyToManyField(Story, related_name="stories", through=Story.assets.through, blank=True)
-    location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True)
+    location = models.ForeignKey(Location, null=True, blank=True)
 
     def __unicode__(self):
         return self.alt + " (" + str(self.id) + ")"
+
+
+@receiver(pre_delete, sender=Story)
+def pre_delete_story(sender, instance, **kwargs):
+    for asset in instance.assets.all():
+        if asset.stories.count() == 1 and instance in asset.stories.all():
+            # instance is the only story using this asset, so delete it
+            asset.delete()
 
 
 class MediaSource(models.Model):

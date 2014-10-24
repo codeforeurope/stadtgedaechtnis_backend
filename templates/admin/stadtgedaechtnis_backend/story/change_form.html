@@ -18,7 +18,9 @@ div#content div#content-right {
 {% block content %}{{ block.super }}
 <div id="content-right">
 	<h2>{% trans "Vorschau des Beitrags" %}</h2>
+    {% if original.pk %}
 	<iframe src="{% url 'stadtgedaechtnis_frontend:entry-view-preview' original.pk %}" style="border: none; width: 380px; height: 800px"></iframe>
+    {% endif %}
 </div>
 {% endblock %}
 
