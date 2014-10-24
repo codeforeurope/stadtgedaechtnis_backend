@@ -2,7 +2,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Page
 from django.db.models import Q
 from rest_framework.fields import get_component, is_simple_callable
-from rest_framework.relations import PrimaryKeyRelatedField
 import six
 
 __author__ = 'jpi'

@@ -1,7 +1,9 @@
 __author__ = 'jpi'
 
 from django import template
+
 from stadtgedaechtnis_backend.models import ImportLogEntry
+
 
 register = template.Library()
 

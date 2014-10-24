@@ -1,9 +1,8 @@
 from datetime import datetime
-import os
+
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView, \
     RetrieveAPIView
 from rest_framework.parsers import FileUploadParser

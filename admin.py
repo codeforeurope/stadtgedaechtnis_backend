@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.conf.urls import patterns, url, include
 from django.views.generic import TemplateView
-from stadtgedaechtnis_backend.admin_models import NewStoriesModelAdmin, NewStory, StoryModelAdmin
 
+from stadtgedaechtnis_backend.admin_models import NewStoriesModelAdmin, NewStory, StoryModelAdmin
 from stadtgedaechtnis_backend.models import *
 
 

@@ -3,6 +3,7 @@ __author__ = 'jpi'
 from rest_framework import permissions
 from django.conf import settings
 from rest_framework.permissions import SAFE_METHODS
+
 from stadtgedaechtnis_backend.services.serializer.fields import create_secret_signature
 
 

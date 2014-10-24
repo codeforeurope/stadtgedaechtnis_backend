@@ -1,7 +1,7 @@
-from stadtgedaechtnis_backend.import_entries.importers import *
-
 from django.views.generic import TemplateView, View
 from django.http.response import HttpResponseServerError, HttpResponse
+
+from stadtgedaechtnis_backend.import_entries.importers import *
 
 
 __author__ = 'jpi'

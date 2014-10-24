@@ -4,7 +4,6 @@ Created on 26.02.2014
 @author: jpi
 """
 from decimal import Decimal, ROUND_DOWN
-
 import os.path
 import mimetypes
 

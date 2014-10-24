@@ -1,13 +1,14 @@
 import operator
+
 from django.core import urlresolvers
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMultiAlternatives
-
 from django.http import HttpResponseServerError
 from django.views.generic.detail import SingleObjectTemplateResponseMixin, BaseDetailView
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView, \
     RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
+from django.utils.translation import ugettext_lazy as _
 
 from stadtgedaechtnis_backend.services.serializer.generics import MultipleRequestSerializerAPIView
 from stadtgedaechtnis_backend.services.serializer.serializers import *
@@ -15,7 +16,6 @@ from stadtgedaechtnis_backend.services.views import GZIPAPIView
 from stadtgedaechtnis_backend.services.authentication.permissions import IsAuthenticatedOrReadOnlyOrModerated, \
     IsAuthenticatedOrModerated
 from stadtgedaechtnis_backend.utils import replace_multiple
-from django.utils.translation import ugettext_lazy as _
 
 
 __author__ = 'Jan'

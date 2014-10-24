@@ -1,8 +1,6 @@
 from django.contrib import admin
 from django import forms
-from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
-from django.db.models import ManyToManyRel
 from django.forms import Select
 from django.utils.safestring import mark_safe
 

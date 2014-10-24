@@ -1,7 +1,9 @@
 __author__ = 'jpi'
 
 from django.conf.urls import patterns, url
+
 from stadtgedaechtnis_backend.services.authentication.views import CreateSessionView, SessionView
+
 
 urlpatterns = patterns(
     '',
