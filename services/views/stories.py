@@ -151,7 +151,8 @@ class StoryTextAndTitleQuery(StoryList):
         keywords = self.kwargs["query"].split(" ")
         # AND the words and OR the title and text queries together
         filter_keywords = reduce(operator.and_, (Q(title__icontains=keyword) for keyword in keywords)) | \
-            reduce(operator.and_, (Q(text__icontains=keyword) for keyword in keywords))
+            reduce(operator.and_, (Q(text__icontains=keyword) for keyword in keywords)) | \
+            reduce(operator.and_, (Q(categories__name__icontains=keyword) for keyword in keywords))
         # filter queryset
         return Story.objects.filter(operator.and_(filter_keywords, Q(temporary=False)))
 
