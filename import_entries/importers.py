@@ -127,6 +127,8 @@ class AddEntryMixIn(object):
             if "quellen" in story:
                 entry.sources = story["quellen"]
 
+            entry.save()
+
             if "categories" in story:
                 for category in story["categories"]:
                     try:
@@ -136,8 +138,6 @@ class AddEntryMixIn(object):
                         category_object.name = category
                         category_object.save()
                     entry.categories.add(category_object)
-
-            entry.save()
 
             if "richtext" in story:
                 richtext = story["richtext"]
