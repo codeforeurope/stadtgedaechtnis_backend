@@ -249,12 +249,12 @@ class JSONAllEntriesImporter(AddEntryMixIn):
 
             # check if story already imported
             if not Story.objects.filter(title=label).exists():
-                try:
-                    location_object = Location.objects.get(latitude=lat, longitude=lon)
-
+                location_objects = Location.objects.filter(latitude=lat, longitude=lon)
+                if len(location_objects) > 0:
+                    location_object = location_objects[0]
                     self.add_story(label, story, location_object)
 
-                except Location.DoesNotExist:
+                else:
                     location["lat"] = str(lat)
                     location["lon"] = str(lon)
                     location["url"] = reverse('admin:stadtgedaechtnis_backend_location_add') + \
@@ -273,7 +273,8 @@ class JSONAllEntriesImporter(AddEntryMixIn):
 
                     self.failed_entries.append(location)
             else:
-                saved_story = Story.objects.get(title=label)
+                saved_stories = Story.objects.filter(title=label)
+                saved_story = saved_stories[0]
                 entry = dict()
                 entry["title"] = label
                 entry["location"] = saved_story.location
