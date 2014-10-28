@@ -34,9 +34,11 @@ class GetNearbyPlacesDBPedia(View):
         sparql.setQuery("select distinct ?link, ?name, ?latitude, ?longitude where "
                         "{?link geo:lat ?latitude . ?link geo:long ?longitude . ?link foaf:name ?name "
                         "filter (xsd:decimal(?latitude) >= " + str(min_lat) + ") "
-                        "filter (xsd:decimal(?latitude) <= " + str(max_lat) + ") "
-                        "filter (xsd:decimal(?longitude) >= " + str(min_lon) + ") "
-                        "filter (xsd:decimal(?longitude) <= " + str(max_lon) + ")}")
+                                                                              "filter (xsd:decimal(?latitude) <= " + str(
+            max_lat) + ") "
+                       "filter (xsd:decimal(?longitude) >= " + str(min_lon) + ") "
+                                                                              "filter (xsd:decimal(?longitude) <= " + str(
+            max_lon) + ")}")
         sparql.setReturnFormat(JSON)
         # query DBpedia
         places = sparql.query().convert()
@@ -133,10 +135,13 @@ class LocationListNearby(LocationList):
     """
     Retrieves a list of locations to given lat and lon coordinates.
     """
+
     def get_queryset(self):
         return get_nearby_locations(self.kwargs["lat"], self.kwargs["lon"],
                                     self.kwargs["maxlat"] if "maxlat" in self.kwargs else 0,
-                                    self.kwargs["maxlon"] if "maxlon" in self.kwargs else 0, True)
+                                    self.kwargs["maxlon"] if "maxlon" in self.kwargs else 0,
+                                    True
+        ).prefetch_related("stories__assets__sources")
 
 
 class LocationListNearbyWithStoryIDs(LocationListNearby, LocationListWithStoryIDs):

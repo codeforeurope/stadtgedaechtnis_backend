@@ -44,7 +44,7 @@ class FilterSerializer(serializers.ModelSerializer):
             return None
 
         if is_simple_callable(getattr(value, 'all', None)):
-            filtered_queryset = value.all().filter(self.get_related_filter())
+            filtered_queryset = value.filter(self.get_related_filter())
             return [self.to_native(item) for item in filtered_queryset]
 
         if value is None:
@@ -122,8 +122,9 @@ class AssetURLSerializer(serializers.ModelSerializer):
         Serializes the first asset source to a source URL
         """
         def to_native(self, value):
-            if value.instance.sources.first() is not None:
-                return value.instance.sources.first().file.url
+            if value.instance.sources.all()[0] is not None:
+                # sources should be prefetched
+                return value.instance.sources.all()[0].file.url
             else:
                 return None
 
@@ -134,7 +135,7 @@ class AssetURLSerializer(serializers.ModelSerializer):
     sources = AssetFirstSourceField()
 
 
-class StoryImageSerializer(FilterSerializer):
+class StoryImageSerializer(serializers.ModelSerializer):
     """
     Serializes a story with only title and abstract and all the assets
     belonging to this story using the AssetURLSerializer
