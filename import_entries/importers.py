@@ -14,7 +14,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from stadtgedaechtnis_backend.utils import replace_multiple, get_nearby_locations
-from stadtgedaechtnis_backend.models import Location, Story, Asset, MediaSource, find_user_by_name
+from stadtgedaechtnis_backend.models import Location, Story, Asset, MediaSource, find_user_by_name, Category
 
 
 STADTGEDAECHTNIS_URL = "http://www.stadtgeschichte-coburg.de/"
@@ -51,6 +51,7 @@ def load_json(source):
         "valueType:": "\"valueType\":",
         " quellen:": " \"quellen\":",
         " richtext:": " \"richtext\":",
+        " categories:": " \"categories\":",
         "	": "",
         "\r\n": "",
         ",\r\n,": ",",
@@ -125,6 +126,16 @@ class AddEntryMixIn(object):
 
             if "quellen" in story:
                 entry.sources = story["quellen"]
+
+            if "categories" in story:
+                for category in story["categories"]:
+                    try:
+                        category_object = Category.objects.get(name=category)
+                    except Category.DoesNotExist:
+                        category_object = Category()
+                        category_object.name = category
+                        category_object.save()
+                    entry.categories.add(category_object)
 
             entry.save()
 
