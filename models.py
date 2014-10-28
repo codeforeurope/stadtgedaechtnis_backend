@@ -13,15 +13,12 @@ from django.db.models.signals import post_delete, pre_delete
 from django.conf import settings
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from caching.base import CachingManager, CachingMixin
 
 
-class Location(CachingMixin, models.Model):
+class Location(models.Model):
     """
     A Location with a geoposition
     """
-    objects = CachingManager()
-
     label = models.CharField(max_length=500)
     description = models.TextField(null=True, blank=True)
     latitude = models.DecimalField(decimal_places=15, max_digits=18)
@@ -38,12 +35,10 @@ class Location(CachingMixin, models.Model):
         return self.label + " [" + lat + ", " + lon + "]"
 
 
-class Category(CachingMixin, models.Model):
+class Category(models.Model):
     """
     One Category to be assigned to a story or asset
     """
-    objects = CachingManager()
-
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
     name = models.CharField(max_length=150)
@@ -53,12 +48,11 @@ class Category(CachingMixin, models.Model):
         return self.name
 
 
-class Story(CachingMixin, models.Model):
+class Story(models.Model):
+
     """
     One entry
     """
-    objects = CachingManager()
-
     categories = models.ManyToManyField(Category, blank=True)
     title = models.CharField(max_length=500)
     abstract = models.TextField()
@@ -91,13 +85,11 @@ class Story(CachingMixin, models.Model):
         return result
 
 
-class Asset(CachingMixin, models.Model):
+class Asset(models.Model):
     """
     Media Object to save images, videos or audio files that belong to an entry,
     a location or an entry type
     """
-    objects = CachingManager()
-
     VIDEO = "vid"
     IMAGE = "img"
     SOUND = "aud"
@@ -135,11 +127,10 @@ def pre_delete_story(sender, instance, **kwargs):
             asset.delete()
 
 
-class MediaSource(CachingMixin, models.Model):
+class MediaSource(models.Model):
     """
     One Source file that belongs to a media object
     """
-    objects = CachingManager()
 
     def get_upload_path(self, filename):
         i = 0
@@ -159,12 +150,10 @@ class MediaSource(CachingMixin, models.Model):
         return mimetypes.guess_type(self.file.url)[0]
 
 
-class ImportLogEntry(CachingMixin, models.Model):
+class ImportLogEntry(models.Model):
     """
     One Import log entry.
     """
-    objects = CachingManager()
-
     date_time = models.DateTimeField(auto_now_add=True)
     imported_entries = models.IntegerField()
     existed_entries = models.IntegerField()
