@@ -154,7 +154,7 @@ class StoryTextAndTitleQuery(StoryList):
             reduce(operator.and_, (Q(text__icontains=keyword) for keyword in keywords)) | \
             reduce(operator.and_, (Q(categories__name__icontains=keyword) for keyword in keywords))
         # filter queryset
-        return Story.objects.filter(operator.and_(filter_keywords, Q(temporary=False)))
+        return Story.objects.filter(operator.and_(filter_keywords, Q(temporary=False))).distinct()
 
 
 class StoryTextQueryWithTitle(StoryTextAndTitleQuery, StoryListWithTitle):
