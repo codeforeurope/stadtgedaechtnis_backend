@@ -180,6 +180,7 @@ class StoryWithUniqueIDSerializer(serializers.ModelSerializer):
                   'location', 'categories', 'assets', 'temporary', 'unique_id', 'stories')
 
     temporary = IgnoreValueBooleanField(default=True)
+    author = serializers.PrimaryKeyRelatedField(default=get_user_model().objects.first().id)
     unique_id = UniqueIDField()
 
 
