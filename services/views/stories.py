@@ -8,6 +8,7 @@ from django.views.generic.detail import SingleObjectTemplateResponseMixin, BaseD
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, RetrieveAPIView, ListAPIView, \
     RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
+from django.utils.translation import ugettext_lazy as _
 
 from stadtgedaechtnis_backend.services.serializer.generics import MultipleRequestSerializerAPIView
 from stadtgedaechtnis_backend.services.serializer.serializers import *
