@@ -14,7 +14,6 @@ from django.conf import settings
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from caching.base import CachingManager, CachingMixin
-from stadtgedaechtnis_backend.admin_models import NewStory
 
 
 class Location(CachingMixin, models.Model):
@@ -129,7 +128,6 @@ class Asset(CachingMixin, models.Model):
 
 
 @receiver(pre_delete, sender=Story)
-@receiver(pre_delete, sender=NewStory)
 def pre_delete_story(sender, instance, **kwargs):
     for asset in instance.assets.all():
         if asset.stories.count() == 1 and instance in asset.stories.all():
