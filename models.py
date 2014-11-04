@@ -83,12 +83,7 @@ class Story(CachingMixin, models.Model):
         """
         Returns a list of additional media for this entry (no images)
         """
-        result = list()
-        for asset in self.assets.all():
-            if asset.type != Asset.IMAGE:
-                result.append(asset)
-
-        return result
+        return self.assets.all()[1:]
 
 
 class Asset(CachingMixin, models.Model):
