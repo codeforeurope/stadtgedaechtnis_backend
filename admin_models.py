@@ -4,16 +4,10 @@ from django.contrib.auth import get_user_model
 from django.forms import Select
 from django.utils.safestring import mark_safe
 
-from stadtgedaechtnis_backend import models
 from stadtgedaechtnis_backend.models import Story
 
 
 __author__ = 'Jan'
-
-
-class NewStory(models.Story):
-    class Meta:
-        proxy = True
 
 
 class NewStoriesModelAdmin(admin.ModelAdmin):

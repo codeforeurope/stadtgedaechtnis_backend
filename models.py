@@ -122,10 +122,16 @@ class Asset(CachingMixin, models.Model):
         return self.alt + " (" + str(self.id) + ")"
 
 
+class NewStory(Story):
+    class Meta:
+        proxy = True
+
+
+@receiver(pre_delete, sender=NewStory)
 @receiver(pre_delete, sender=Story)
 def pre_delete_story(sender, instance, **kwargs):
     for asset in instance.assets.all():
-        if asset.stories.count() == 1 and instance in asset.stories.all():
+        if asset.stories.count() == 1 and instance.id == asset.stories.first().id:
             # instance is the only story using this asset, so delete it
             asset.delete()
 
