@@ -137,6 +137,7 @@ def pre_delete_story(sender, instance, **kwargs):
     # do the same for locations
     location = instance.location
     if location.stories.count() == 1 and instance.id == location.stories.first().id:
+        instance.location = None
         location.delete()
 
 
