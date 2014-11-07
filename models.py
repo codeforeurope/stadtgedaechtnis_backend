@@ -135,11 +135,12 @@ def pre_delete_story(sender, instance, **kwargs):
             # instance is the only story using this asset, so delete it
             asset.delete()
     # do the same for locations
-    location = instance.location
-    if location.stories.count() == 1 and instance.id == location.stories.first().id:
-        instance.location = None
-        instance.save()
-        location.delete()
+    if instance.location is not None:
+        location = instance.location
+        if location.stories.count() == 1 and instance.id == location.stories.first().id:
+            instance.location = None
+            instance.save()
+            location.delete()
 
 
 class MediaSource(CachingMixin, models.Model):
