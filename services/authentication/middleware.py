@@ -29,6 +29,11 @@ class TokenSessionMiddleware(SessionMiddleware):
             elif len(auth) == 2 and auth[0].lower() == b'token':
                 session_key = auth[1]
 
+            # fall back to traditional cookie sessions if no authentication is provided
+            # this is necessary for localization
+            if session_key is None:
+                session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
+
             request.session = engine.SessionStore(session_key)
 
     def process_response(self, request, response):
