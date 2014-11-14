@@ -31,14 +31,14 @@ class TokenSessionMiddleware(SessionMiddleware):
 
             # fall back to traditional cookie sessions if no authentication is provided
             # this is necessary for localization
-            if session_key is None:
+            if not is_api_request(request) and session_key is None:
                 session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
 
             request.session = engine.SessionStore(session_key)
 
     def process_response(self, request, response):
         # redirect to normal SessionMiddleware if the path starts with admin
-        if request.path.startswith("/admin/"):
+        if not is_api_request(request) or request.path.startswith("/admin/"):
             return super(TokenSessionMiddleware, self).process_response(request, response)
         else:
             # save session if no server error occured
@@ -47,6 +47,15 @@ class TokenSessionMiddleware(SessionMiddleware):
                 request.session.save()
 
             return response
+
+
+def is_api_request(request):
+    """
+    Determines whether the current request is an API request or a normal request
+    :param request:
+    :return:
+    """
+    return request.path.startswith("/services/")
 
 
 class TokenSessionAuthentication(SessionAuthentication):
